@@ -1,0 +1,6 @@
+sylius_core:
+    autoconfigure_with_attributes: true
+    state_machine: winzou_state_machine
+
+sylius_order:
+    autoconfigure_with_attributes: false

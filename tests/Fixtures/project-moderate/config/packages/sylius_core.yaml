@@ -1,0 +1,2 @@
+sylius_core:
+    autoconfigure_with_attributes: true

@@ -32,6 +32,18 @@ final class SecurityFirewallAnalyzer implements AnalyzerInterface
     ];
 
     /**
+     * Noms des firewalls Sylius necessitant un user_checker dans Sylius 2.0.
+     *
+     * @var list<string>
+     */
+    private const FIREWALLS_REQUIRING_USER_CHECKER = [
+        'admin',
+        'shop',
+        'api_admin',
+        'api_shop',
+    ];
+
+    /**
      * Correspondances entre les anciens et nouveaux noms de parametres de securite.
      *
      * @var array<string, string>
@@ -83,6 +95,17 @@ final class SecurityFirewallAnalyzer implements AnalyzerInterface
                     return true;
                 }
             }
+
+            /* Recherche des firewalls Sylius sans user_checker configure */
+            if (str_contains($content, 'firewalls:')) {
+                foreach (self::FIREWALLS_REQUIRING_USER_CHECKER as $firewallName) {
+                    if (preg_match('/^\s+' . preg_quote($firewallName, '/') . '\s*:/m', $content) === 1
+                        && !str_contains($content, 'user_checker:')
+                    ) {
+                        return true;
+                    }
+                }
+            }
         }
 
         return false;
@@ -112,6 +135,9 @@ final class SecurityFirewallAnalyzer implements AnalyzerInterface
 
             /* Detection des anciens noms de parametres */
             $this->detectParameterRenames($report, $lines, $filePath);
+
+            /* Detection des firewalls sans user_checker configure */
+            $this->detectMissingUserChecker($report, $content, $filePath);
         }
     }
 
@@ -186,6 +212,53 @@ final class SecurityFirewallAnalyzer implements AnalyzerInterface
                         estimatedMinutes: self::MINUTES_PER_REFERENCE,
                     ));
                 }
+            }
+        }
+    }
+
+    /**
+     * Detecte les firewalls Sylius qui ne configurent pas de user_checker.
+     * Dans Sylius 2.0, chaque firewall doit definir un user_checker chaine.
+     */
+    private function detectMissingUserChecker(MigrationReport $report, string $content, string $filePath): void
+    {
+        /* Verification de la presence de la section firewalls */
+        if (!str_contains($content, 'firewalls:')) {
+            return;
+        }
+
+        $hasUserChecker = str_contains($content, 'user_checker:');
+
+        foreach (self::FIREWALLS_REQUIRING_USER_CHECKER as $firewallName) {
+            /* Verification que le firewall est defini comme cle YAML */
+            if (preg_match('/^\s+' . preg_quote($firewallName, '/') . '\s*:/m', $content) !== 1) {
+                continue;
+            }
+
+            /* Si aucun user_checker n'est configure dans le fichier, signaler le probleme */
+            if (!$hasUserChecker) {
+                $report->addIssue(new MigrationIssue(
+                    severity: Severity::WARNING,
+                    category: Category::DEPRECATION,
+                    analyzer: $this->getName(),
+                    message: sprintf(
+                        'Configuration user_checker manquante pour le firewall "%s"',
+                        $firewallName,
+                    ),
+                    detail: sprintf(
+                        'Le firewall "%s" ne configure pas de user_checker. '
+                        . 'Dans Sylius 2.0, tous les firewalls doivent definir un user_checker chaine.',
+                        $firewallName,
+                    ),
+                    suggestion: sprintf(
+                        'Ajouter "user_checker: security.user_checker.chain.%s" '
+                        . 'dans la configuration du firewall "%s".',
+                        $firewallName,
+                        $firewallName,
+                    ),
+                    file: $filePath,
+                    estimatedMinutes: self::MINUTES_PER_REFERENCE,
+                ));
             }
         }
     }

@@ -52,6 +52,29 @@ final class RenamedServiceIdAnalyzer implements AnalyzerInterface
         'sylius.http_message_factory' => 'removed',
         'sylius.form.type.product_option_choice' => 'removed',
         'sylius.form_registry.payum_gateway_config' => 'sylius.form_registry.payment_gateway_config',
+        'sylius.admin.menu_builder.customer.show' => 'removed',
+        'sylius.admin.menu_builder.order.show' => 'removed',
+    ];
+
+    /**
+     * Correspondance entre anciens prefixes de services et nouveaux prefixes.
+     * Utilise pour detecter les patterns de renommage par prefixe dans les fichiers YAML.
+     *
+     * @var array<string, string>
+     */
+    private const SERVICE_PREFIX_RENAMES = [
+        'sylius.controller.admin.' => 'sylius_admin.controller.',
+        'sylius.listener.admin.' => 'sylius_admin.listener.',
+    ];
+
+    /**
+     * Espaces de noms utilises comme identifiants de services dans les fichiers YAML.
+     * Ces references doivent etre remplacees par des identifiants prefixes dans Sylius 2.0.
+     *
+     * @var array<string, string>
+     */
+    private const SERVICE_NAMESPACE_RENAMES = [
+        'Sylius\\Bundle\\ApiBundle\\' => 'sylius_api.*',
     ];
 
     public function getName(): string
@@ -71,8 +94,21 @@ final class RenamedServiceIdAnalyzer implements AnalyzerInterface
 
         foreach ($finder as $file) {
             $content = (string) file_get_contents((string) $file->getRealPath());
+
             foreach (array_keys(self::SERVICE_RENAMES) as $oldServiceId) {
                 if (str_contains($content, $oldServiceId)) {
+                    return true;
+                }
+            }
+
+            foreach (array_keys(self::SERVICE_PREFIX_RENAMES) as $oldPrefix) {
+                if (str_contains($content, $oldPrefix)) {
+                    return true;
+                }
+            }
+
+            foreach (array_keys(self::SERVICE_NAMESPACE_RENAMES) as $oldNamespace) {
+                if (str_contains($content, $oldNamespace)) {
                     return true;
                 }
             }
@@ -86,10 +122,13 @@ final class RenamedServiceIdAnalyzer implements AnalyzerInterface
         $projectPath = $report->getProjectPath();
         $referenceCount = 0;
 
-        /* Etape 1 : analyse de tous les fichiers YAML dans config/ */
+        /* Etape 1 : analyse des identifiants exacts dans les fichiers YAML de config/ */
         $referenceCount += $this->analyzeYamlFiles($report, $projectPath);
 
-        /* Etape 2 : ajout d'un probleme de synthese si des references sont detectees */
+        /* Etape 2 : analyse des prefixes de services dans les fichiers YAML de config/ */
+        $referenceCount += $this->scanForPrefixPatterns($report, $projectPath);
+
+        /* Etape 3 : ajout d'un probleme de synthese si des references sont detectees */
         if ($referenceCount > 0) {
             $report->addIssue(new MigrationIssue(
                 severity: Severity::BREAKING,
@@ -181,6 +220,95 @@ final class RenamedServiceIdAnalyzer implements AnalyzerInterface
                             docUrl: self::DOC_URL,
                         ));
                     }
+                }
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * Analyse les fichiers YAML dans config/ pour les prefixes de services deprecies
+     * et les espaces de noms utilises comme identifiants de services.
+     * Retourne le nombre de references trouvees.
+     */
+    private function scanForPrefixPatterns(MigrationReport $report, string $projectPath): int
+    {
+        $configDir = $projectPath . '/config';
+        if (!is_dir($configDir)) {
+            return 0;
+        }
+
+        $count = 0;
+        $finder = new Finder();
+        $finder->files()->in($configDir)->name('*.yaml')->name('*.yml');
+
+        foreach ($finder as $file) {
+            $filePath = $file->getRealPath();
+            if ($filePath === false) {
+                continue;
+            }
+
+            $content = (string) file_get_contents($filePath);
+            $relativePath = $file->getRelativePathname();
+
+            /* Verification des prefixes de services deprecies */
+            foreach (self::SERVICE_PREFIX_RENAMES as $oldPrefix => $newPrefix) {
+                if (str_contains($content, $oldPrefix)) {
+                    $count++;
+                    $report->addIssue(new MigrationIssue(
+                        severity: Severity::BREAKING,
+                        category: Category::DEPRECATION,
+                        analyzer: $this->getName(),
+                        message: sprintf(
+                            'Prefixe de service deprecie "%s" detecte dans %s',
+                            $oldPrefix,
+                            $relativePath,
+                        ),
+                        detail: sprintf(
+                            'Le prefixe de service "%s" est renomme en "%s" dans Sylius 2.0. '
+                            . 'Toutes les references utilisant ce prefixe doivent etre mises a jour.',
+                            $oldPrefix,
+                            $newPrefix,
+                        ),
+                        suggestion: sprintf(
+                            'Remplacer le prefixe "%s" par "%s" dans les identifiants de services.',
+                            $oldPrefix,
+                            $newPrefix,
+                        ),
+                        file: $filePath,
+                        docUrl: self::DOC_URL,
+                    ));
+                }
+            }
+
+            /* Verification des espaces de noms utilises comme identifiants de services */
+            foreach (self::SERVICE_NAMESPACE_RENAMES as $oldNamespace => $newPattern) {
+                if (str_contains($content, $oldNamespace)) {
+                    $count++;
+                    $report->addIssue(new MigrationIssue(
+                        severity: Severity::BREAKING,
+                        category: Category::DEPRECATION,
+                        analyzer: $this->getName(),
+                        message: sprintf(
+                            'Espace de noms utilise comme identifiant de service "%s" detecte dans %s',
+                            $oldNamespace,
+                            $relativePath,
+                        ),
+                        detail: sprintf(
+                            'L\'espace de noms "%s" utilise comme identifiant de service YAML '
+                            . 'doit etre remplace par un identifiant prefixe "%s" dans Sylius 2.0.',
+                            $oldNamespace,
+                            $newPattern,
+                        ),
+                        suggestion: sprintf(
+                            'Remplacer les references a "%s" par des identifiants prefixes "%s".',
+                            $oldNamespace,
+                            $newPattern,
+                        ),
+                        file: $filePath,
+                        docUrl: self::DOC_URL,
+                    ));
                 }
             }
         }

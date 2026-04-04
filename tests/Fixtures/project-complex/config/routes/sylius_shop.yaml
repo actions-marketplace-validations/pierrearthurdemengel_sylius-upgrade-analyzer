@@ -1,0 +1,7 @@
+sylius_shop_payum:
+    resource: "@SyliusShopBundle/Resources/config/routing/payum.yml"
+    prefix: /payum
+
+sylius_api:
+    resource: .
+    prefix: '%sylius.security.new_api_route%'

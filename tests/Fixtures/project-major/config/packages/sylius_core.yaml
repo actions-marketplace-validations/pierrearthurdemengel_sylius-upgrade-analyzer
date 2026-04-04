@@ -1,0 +1,15 @@
+sylius_core:
+    autoconfigure_with_attributes: true
+    state_machine: winzou_state_machine
+
+sylius_order:
+    autoconfigure_with_attributes: false
+
+sylius_inventory:
+    checker: ~
+
+sylius_api:
+    legacy_error_handling: true
+    serialization_groups:
+        skip_adding_read_group: true
+        skip_adding_index_and_show_groups: true
