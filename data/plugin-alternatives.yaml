@@ -1,0 +1,135 @@
+# Base de donnees des alternatives connues pour les plugins Sylius
+# Ce fichier est maintenu dans le projet et utilise par PluginAlternativeSuggester
+
+alternatives:
+  bitbag/sylius-wishlist-plugin:
+    replacement: sylius/wishlist-plugin
+    reason: "BitBag a transfere la maintenance a Sylius"
+    migration_hours: 2
+    doc_url: "https://github.com/Sylius/WishlistPlugin"
+
+  bitbag/sylius-cms-plugin:
+    replacement: sylius/cms-plugin
+    reason: "Version officielle Sylius disponible pour 2.x"
+    migration_hours: 4
+    doc_url: "https://github.com/Sylius/CmsPlugin"
+
+  bitbag/sylius-shipping-export-plugin:
+    replacement: sylius/shipping-export-plugin
+    reason: "Plugin repris par Sylius pour assurer la compatibilite 2.x"
+    migration_hours: 3
+    doc_url: "https://github.com/Sylius/ShippingExportPlugin"
+
+  stefandoorn/sylius-google-tag-manager-plugin:
+    replacement: setono/sylius-google-analytics-plugin
+    reason: "Plugin abandonne, Setono propose une alternative maintenue pour Sylius 2.x"
+    migration_hours: 3
+    doc_url: "https://github.com/Setono/SyliusGoogleAnalyticsPlugin"
+
+  setono/sylius-analytics-plugin:
+    replacement: setono/sylius-google-analytics-plugin
+    reason: "Renomme et restructure pour Sylius 2.x"
+    migration_hours: 2
+    doc_url: "https://github.com/Setono/SyliusGoogleAnalyticsPlugin"
+
+  odiseo/sylius-blog-plugin:
+    replacement: monsieurbiz/sylius-cms-page-plugin
+    reason: "Odiseo n'a pas publie de version compatible 2.x, MonsieurBiz couvre les cas d'usage blog via CMS"
+    migration_hours: 6
+    doc_url: "https://github.com/monsieurbiz/SyliusCmsPagePlugin"
+
+  mangoweb-sylius/sylius-extended-channels:
+    replacement: null
+    reason: "Fonctionnalite integree nativement dans Sylius 2.x"
+    migration_hours: 1
+    doc_url: "https://docs.sylius.com/en/latest/book/configuration/channels.html"
+
+  flux-se/sylius-payum-stripe-plugin:
+    replacement: stripe/stripe-php
+    reason: "Sylius 2.x utilise directement l'API Stripe sans Payum, migration vers l'integration native recommandee"
+    migration_hours: 8
+    doc_url: "https://docs.sylius.com/en/latest/book/payments/stripe.html"
+
+  synolia/sylius-akeneo-plugin:
+    replacement: webgriffe/sylius-akeneo-plugin
+    reason: "Synolia a arrete la maintenance, Webgriffe propose une alternative compatible 2.x"
+    migration_hours: 10
+    doc_url: "https://github.com/webgriffe/SyliusAkeneoPlugin"
+
+  madcoders/sylius-rma-plugin:
+    replacement: null
+    reason: "Plugin abandonne, aucune alternative directe disponible. Reimplementation necessaire."
+    migration_hours: 16
+    doc_url: null
+
+  bitbag/sylius-elasticsearch-plugin:
+    replacement: monsieurbiz/sylius-search-plugin
+    reason: "BitBag a arrete la maintenance du plugin Elasticsearch. MonsieurBiz propose une alternative basee sur Elasticsearch/Meilisearch."
+    migration_hours: 8
+    doc_url: "https://github.com/monsieurbiz/SyliusSearchPlugin"
+
+  bitbag/sylius-mailchimp-plugin:
+    replacement: setono/sylius-mailchimp-plugin
+    reason: "BitBag n'a pas publie de version compatible 2.x, Setono maintient une alternative"
+    migration_hours: 4
+    doc_url: "https://github.com/Setono/SyliusMailchimpPlugin"
+
+  bitbag/sylius-mollie-plugin:
+    replacement: mollie/sylius-plugin
+    reason: "Mollie a repris la maintenance officielle du plugin pour Sylius 2.x"
+    migration_hours: 3
+    doc_url: "https://github.com/mollie/Sylius"
+
+  bitbag/sylius-bonus-points-plugin:
+    replacement: null
+    reason: "Plugin abandonne sans alternative directe. Reimplementation basee sur le systeme de promotions Sylius 2.x recommandee."
+    migration_hours: 12
+    doc_url: null
+
+  bitbag/sylius-catalog-plugin:
+    replacement: monsieurbiz/sylius-catalog-plugin
+    reason: "MonsieurBiz propose un catalogue enrichi compatible avec Sylius 2.x"
+    migration_hours: 5
+    doc_url: "https://github.com/monsieurbiz/SyliusCatalogPlugin"
+
+  nedac/sylius-minimum-order-value-plugin:
+    replacement: null
+    reason: "Fonctionnalite realisable via les regles de promotion natives de Sylius 2.x"
+    migration_hours: 2
+    doc_url: "https://docs.sylius.com/en/latest/book/orders/promotions.html"
+
+  monsieurbiz/sylius-search-plugin:
+    replacement: monsieurbiz/sylius-search-plugin
+    reason: "Version 2.x disponible, mise a jour directe possible"
+    migration_hours: 2
+    doc_url: "https://github.com/monsieurbiz/SyliusSearchPlugin"
+
+  monsieurbiz/sylius-rich-editor-plugin:
+    replacement: monsieurbiz/sylius-rich-editor-plugin
+    reason: "Version compatible 2.x disponible, mise a jour directe"
+    migration_hours: 2
+    doc_url: "https://github.com/monsieurbiz/SyliusRichEditorPlugin"
+
+  monsieurbiz/sylius-no-commerce-plugin:
+    replacement: monsieurbiz/sylius-no-commerce-plugin
+    reason: "Version compatible 2.x disponible, mise a jour directe"
+    migration_hours: 1
+    doc_url: "https://github.com/monsieurbiz/SyliusNoCommercePlugin"
+
+  asdoria/sylius-facet-filter-plugin:
+    replacement: monsieurbiz/sylius-search-plugin
+    reason: "Asdoria n'a pas publie de version 2.x, MonsieurBiz Search inclut le filtrage par facettes"
+    migration_hours: 6
+    doc_url: "https://github.com/monsieurbiz/SyliusSearchPlugin"
+
+  subitolabs/sylius-backup-plugin:
+    replacement: null
+    reason: "Plugin abandonne. Utiliser des outils de sauvegarde systeme (mysqldump, pg_dump) ou des solutions cloud."
+    migration_hours: 4
+    doc_url: null
+
+  webgriffe/sylius-akeneo-plugin:
+    replacement: webgriffe/sylius-akeneo-plugin
+    reason: "Version compatible 2.x disponible, mise a jour directe"
+    migration_hours: 3
+    doc_url: "https://github.com/webgriffe/SyliusAkeneoPlugin"
