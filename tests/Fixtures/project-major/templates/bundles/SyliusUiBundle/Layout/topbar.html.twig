@@ -1,0 +1,30 @@
+{% block topbar %}
+<div class="ui fixed inverted menu">
+    <div class="ui container">
+        <a class="header item" href="{{ path('sylius_shop_homepage') }}">
+            <img class="logo" src="{{ asset('images/logo.png') }}"/>
+            {{ 'sylius.ui.store_name'|trans }}
+        </a>
+        <div class="right menu">
+            <a class="item" href="{{ path('sylius_shop_cart_summary') }}">
+                <i class="cart icon"></i>
+                {{ 'sylius.ui.cart'|trans }}
+                {% if cart is defined and cart.items|length > 0 %}
+                    <div class="ui red label">{{ cart.items|length }}</div>
+                {% endif %}
+            </a>
+            {% if app.user %}
+                <a class="item" href="{{ path('sylius_shop_account_dashboard') }}">
+                    <i class="user icon"></i>
+                    {{ app.user.email }}
+                </a>
+            {% else %}
+                <a class="item" href="{{ path('sylius_shop_login') }}">
+                    <i class="sign in icon"></i>
+                    {{ 'sylius.ui.login'|trans }}
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

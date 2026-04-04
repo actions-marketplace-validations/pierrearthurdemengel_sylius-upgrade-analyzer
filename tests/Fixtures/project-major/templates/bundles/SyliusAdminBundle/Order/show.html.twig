@@ -1,0 +1,35 @@
+{% extends '@SyliusAdmin/layout.html.twig' %}
+
+{% block content %}
+<div class="ui segment">
+    <h1 class="ui header">Order #{{ order.number }}</h1>
+    <div class="ui label {{ order.state }}">{{ order.state|trans }}</div>
+
+    <table class="ui celled table">
+        <thead>
+            <tr>
+                <th>{{ 'sylius.ui.product'|trans }}</th>
+                <th>{{ 'sylius.ui.quantity'|trans }}</th>
+                <th>{{ 'sylius.ui.unit_price'|trans }}</th>
+                <th>{{ 'sylius.ui.total'|trans }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items %}
+            <tr>
+                <td>{{ item.productName }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.unitPrice|sylius_price }}</td>
+                <td>{{ item.total|sylius_price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="ui buttons">
+        <a class="ui button" href="{{ path('app_admin_order_export_pdf', {'id': order.id}) }}">
+            <i class="file pdf icon"></i> Export PDF
+        </a>
+    </div>
+</div>
+{% endblock %}

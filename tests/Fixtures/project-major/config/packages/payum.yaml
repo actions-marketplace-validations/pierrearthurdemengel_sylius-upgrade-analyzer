@@ -1,0 +1,18 @@
+payum:
+    gateways:
+        stripe_checkout:
+            factory: stripe_checkout
+            publishable_key: '%env(STRIPE_PUBLIC_KEY)%'
+            secret_key: '%env(STRIPE_SECRET_KEY)%'
+        paypal_express:
+            factory: paypal_express_checkout
+            username: '%env(PAYPAL_USERNAME)%'
+            password: '%env(PAYPAL_PASSWORD)%'
+            signature: '%env(PAYPAL_SIGNATURE)%'
+            sandbox: true
+        offline:
+            factory: offline
+        cash_on_delivery:
+            factory: offline
+        bank_transfer:
+            factory: offline

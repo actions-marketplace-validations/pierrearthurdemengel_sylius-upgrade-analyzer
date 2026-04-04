@@ -1,0 +1,29 @@
+{% extends '@SyliusAdmin/layout.html.twig' %}
+
+{% block content %}
+<div class="ui segment">
+    <h1 class="ui header">{{ customer.fullName }}</h1>
+    <div class="ui two column grid">
+        <div class="column">
+            <table class="ui definition table">
+                <tr><td>{{ 'sylius.ui.email'|trans }}</td><td>{{ customer.email }}</td></tr>
+                <tr><td>{{ 'sylius.ui.first_name'|trans }}</td><td>{{ customer.firstName }}</td></tr>
+                <tr><td>{{ 'sylius.ui.last_name'|trans }}</td><td>{{ customer.lastName }}</td></tr>
+                <tr><td>{{ 'app.ui.loyalty_tier'|trans }}</td><td>{{ customer.loyaltyTier }}</td></tr>
+                <tr><td>{{ 'app.ui.loyalty_points'|trans }}</td><td>{{ customer.loyaltyPoints }}</td></tr>
+            </table>
+        </div>
+        <div class="column">
+            <h3 class="ui header">{{ 'sylius.ui.recent_orders'|trans }}</h3>
+            <div class="ui list">
+                {% for order in customer.orders|slice(0, 5) %}
+                    <div class="item">
+                        <a href="{{ path('sylius_admin_order_show', {'id': order.id}) }}">#{{ order.number }}</a>
+                        - {{ order.total|sylius_price }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

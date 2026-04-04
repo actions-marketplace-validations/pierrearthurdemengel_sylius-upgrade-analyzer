@@ -1,0 +1,21 @@
+{% extends '@SyliusShop/Account/layout.html.twig' %}
+
+{% block account_content %}
+<div class="ui segment">
+    <h1 class="ui header">{{ 'sylius.ui.my_account'|trans }}</h1>
+    <div class="ui three statistics">
+        <div class="statistic">
+            <div class="value">{{ customer.orders|length }}</div>
+            <div class="label">{{ 'sylius.ui.orders'|trans }}</div>
+        </div>
+        <div class="statistic">
+            <div class="value">{{ customer.loyaltyPoints }}</div>
+            <div class="label">{{ 'app.ui.loyalty_points'|trans }}</div>
+        </div>
+        <div class="statistic">
+            <div class="value">{{ customer.loyaltyTier|default('Bronze') }}</div>
+            <div class="label">{{ 'app.ui.tier'|trans }}</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

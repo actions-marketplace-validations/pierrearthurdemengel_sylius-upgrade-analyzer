@@ -1,0 +1,42 @@
+{% extends '@SyliusShop/layout.html.twig' %}
+
+{% block content %}
+<div class="ui grid">
+    <div class="ui segment">
+        <h1 class="ui header">{{ product.name }}</h1>
+        <div class="ui divider"></div>
+
+        <div class="ui two column grid">
+            <div class="column">
+                {% for image in product.images %}
+                    <img class="ui fluid image" src="{{ image.path|imagine_filter('sylius_shop_product_large') }}" alt="{{ product.name }}"/>
+                {% endfor %}
+            </div>
+            <div class="column">
+                <div class="ui segment">
+                    <span class="ui large label">{{ product.variant.price|sylius_price }}</span>
+                </div>
+
+                {% if product.shortDescription %}
+                    <p>{{ product.shortDescription }}</p>
+                {% endif %}
+
+                {{ form_start(form) }}
+                    {{ form_widget(form) }}
+                    <button type="submit" class="ui primary button">
+                        <i class="cart icon"></i> {{ 'sylius.ui.add_to_cart'|trans }}
+                    </button>
+                {{ form_end(form) }}
+
+                <div class="ui list">
+                    {% for attribute in product.attributes %}
+                        <div class="item">
+                            <strong>{{ attribute.name }}:</strong> {{ attribute.value }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends '@SyliusShop/layout.html.twig' %}
+
+{% block content %}
+<div class="ui stackable grid">
+    <div class="four wide column">
+        {% include '@SyliusShop/Product/_sidebar.html.twig' %}
+    </div>
+    <div class="twelve wide column">
+        <div class="ui segment">
+            <h2 class="ui header">{{ 'sylius.ui.products'|trans }}</h2>
+            <div class="ui four cards">
+                {% for product in products %}
+                    <div class="ui card">
+                        <div class="image">
+                            <img src="{{ product.image|imagine_filter('sylius_shop_product_thumbnail') }}"/>
+                        </div>
+                        <div class="content">
+                            <a class="header" href="{{ path('sylius_shop_product_show', {'slug': product.slug}) }}">{{ product.name }}</a>
+                            <div class="meta">
+                                <span class="price">{{ product.price|sylius_price }}</span>
+                            </div>
+                        </div>
+                        <div class="extra content">
+                            <button class="ui primary button fluid">{{ 'sylius.ui.add_to_cart'|trans }}</button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

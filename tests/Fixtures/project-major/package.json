@@ -1,0 +1,22 @@
+{
+    "name": "acme-sylius-extreme-shop",
+    "private": true,
+    "dependencies": {
+        "jquery": "^3.6",
+        "semantic-ui-css": "^2.4",
+        "fomantic-ui": "^2.9",
+        "trumbowyg": "^2.26",
+        "jquery-ui": "^1.13",
+        "slick-carousel": "^1.8"
+    },
+    "devDependencies": {
+        "@symfony/webpack-encore": "^4.0",
+        "sass-loader": "^13.0",
+        "sass": "^1.60"
+    },
+    "scripts": {
+        "dev": "encore dev",
+        "build": "encore production",
+        "watch": "encore dev --watch"
+    }
+}

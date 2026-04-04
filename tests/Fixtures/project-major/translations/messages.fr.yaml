@@ -1,0 +1,43 @@
+sylius:
+    ui:
+        add_to_cart: Ajouter au panier
+        cart: Panier
+        checkout: Commander
+        products: Produits
+        product: Produit
+        quantity: Quantite
+        unit_price: Prix unitaire
+        total: Total
+        number: Numero
+        date: Date
+        state: Etat
+        channel: Canal
+        email: Email
+        first_name: Prenom
+        last_name: Nom
+        address: Adresse
+        billing_address: Adresse de facturation
+        shipping_address: Adresse de livraison
+        next: Suivant
+        orders: Commandes
+        my_account: Mon compte
+        today_orders: Commandes du jour
+        today_revenue: Chiffre du jour
+        new_customers: Nouveaux clients
+        manage_products: Gerer les produits
+        manage_promotions: Gerer les promotions
+        recent_orders: Commandes recentes
+        login: Connexion
+        store_name: Ma Boutique
+
+app:
+    ui:
+        loyalty_points: Points de fidelite
+        tier: Niveau
+        loyalty_tier: Niveau de fidelite
+        average_order_value: Panier moyen
+        sales_chart: Graphique des ventes
+    form:
+        customer:
+            loyalty_tier: Niveau de fidelite
+            loyalty_points: Points de fidelite

@@ -1,0 +1,40 @@
+{% extends '@SyliusAdmin/layout.html.twig' %}
+
+{% block content %}
+<div class="ui grid">
+    <div class="row">
+        <div class="four wide column">
+            <div class="ui statistic">
+                <div class="value">{{ stats.todayOrders }}</div>
+                <div class="label">{{ 'sylius.ui.today_orders'|trans }}</div>
+            </div>
+        </div>
+        <div class="four wide column">
+            <div class="ui statistic">
+                <div class="value">{{ stats.todayRevenue|sylius_price }}</div>
+                <div class="label">{{ 'sylius.ui.today_revenue'|trans }}</div>
+            </div>
+        </div>
+        <div class="four wide column">
+            <div class="ui statistic">
+                <div class="value">{{ stats.newCustomers }}</div>
+                <div class="label">{{ 'sylius.ui.new_customers'|trans }}</div>
+            </div>
+        </div>
+        <div class="four wide column">
+            <div class="ui statistic">
+                <div class="value">{{ stats.averageOrderValue|sylius_price }}</div>
+                <div class="label">{{ 'app.ui.average_order_value'|trans }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="sixteen wide column">
+            <div class="ui segment">
+                <h3 class="ui header">{{ 'app.ui.sales_chart'|trans }}</h3>
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

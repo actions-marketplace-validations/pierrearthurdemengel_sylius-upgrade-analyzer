@@ -1,0 +1,41 @@
+{
+    "name": "acme/sylius-extreme-shop",
+    "description": "A heavily customized Sylius 1.x e-commerce project",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.1",
+        "sylius/sylius": "~1.11.0",
+        "winzou/state-machine-bundle": "^0.6",
+        "swiftmailer/swiftmailer": "^6.3",
+        "payum/core": "^1.7",
+        "payum/payum-bundle": "^2.5",
+        "api-platform/core": "^2.7",
+        "bitbag/sylius-cms-plugin": "^4.0",
+        "bitbag/sylius-wishlist-plugin": "^2.0",
+        "bitbag/sylius-elasticsearch-plugin": "^1.0",
+        "bitbag/sylius-shipping-export-plugin": "^1.0",
+        "sylius/invoicing-plugin": "^0.20",
+        "sylius/refund-plugin": "^1.2",
+        "setono/sylius-analytics-plugin": "^3.0",
+        "mangoweb-sylius/sylius-extended-channels": "^0.5",
+        "stefandoorn/sylius-google-tag-manager-enhanced-ecommerce-plugin": "^1.0",
+        "odiseo/sylius-blog-plugin": "^0.8",
+        "monsieurbiz/sylius-rich-editor-plugin": "^2.0",
+        "monsieurbiz/sylius-search-plugin": "^2.0",
+        "synolia/sylius-akeneo-plugin": "^3.0",
+        "stripe/stripe-php": "^10.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "friends-of-behat/mink": "^1.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

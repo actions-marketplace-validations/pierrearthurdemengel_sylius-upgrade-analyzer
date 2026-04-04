@@ -1,0 +1,7 @@
+security:
+    encoders:
+        Sylius\Component\User\Model\UserInterface:
+            algorithm: argon2i
+        App\Entity\Customer\Customer:
+            algorithm: bcrypt
+            cost: 13

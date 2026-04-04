@@ -1,0 +1,8 @@
+{% extends '@SyliusAdmin/layout.html.twig' %}
+
+{% block content %}
+<div class="ui segment">
+    <h1 class="ui header">{{ 'sylius.ui.manage_products'|trans }}</h1>
+    {{ sylius_grid_render(grid) }}
+</div>
+{% endblock %}

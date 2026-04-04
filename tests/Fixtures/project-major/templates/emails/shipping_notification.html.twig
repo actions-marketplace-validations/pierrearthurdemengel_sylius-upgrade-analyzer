@@ -1,0 +1,8 @@
+{% extends '@SyliusShop/Email/layout.html.twig' %}
+
+{% block subject %}Your order has been shipped{% endblock %}
+
+{% block body %}
+<h1>Your order is on its way!</h1>
+<p>Tracking number: <strong>{{ shipment.tracking }}</strong></p>
+{% endblock %}

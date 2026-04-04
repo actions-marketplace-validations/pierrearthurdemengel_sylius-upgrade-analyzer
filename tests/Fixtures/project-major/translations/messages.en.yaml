@@ -1,0 +1,43 @@
+sylius:
+    ui:
+        add_to_cart: Add to cart
+        cart: Cart
+        checkout: Checkout
+        products: Products
+        product: Product
+        quantity: Quantity
+        unit_price: Unit price
+        total: Total
+        number: Number
+        date: Date
+        state: State
+        channel: Channel
+        email: Email
+        first_name: First name
+        last_name: Last name
+        address: Address
+        billing_address: Billing address
+        shipping_address: Shipping address
+        next: Next
+        orders: Orders
+        my_account: My account
+        today_orders: Today's orders
+        today_revenue: Today's revenue
+        new_customers: New customers
+        manage_products: Manage products
+        manage_promotions: Manage promotions
+        recent_orders: Recent orders
+        login: Log in
+        store_name: My Shop
+
+app:
+    ui:
+        loyalty_points: Loyalty points
+        tier: Tier
+        loyalty_tier: Loyalty tier
+        average_order_value: Average order value
+        sales_chart: Sales chart
+    form:
+        customer:
+            loyalty_tier: Loyalty tier
+            loyalty_points: Loyalty points

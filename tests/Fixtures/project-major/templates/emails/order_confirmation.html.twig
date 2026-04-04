@@ -1,0 +1,18 @@
+{% extends '@SyliusShop/Email/layout.html.twig' %}
+
+{% block subject %}Order Confirmation #{{ order.number }}{% endblock %}
+
+{% block body %}
+<h1>Thank you for your order!</h1>
+<p>Your order <strong>#{{ order.number }}</strong> has been confirmed.</p>
+<table>
+    {% for item in order.items %}
+    <tr>
+        <td>{{ item.productName }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.total|sylius_price }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<p><strong>Total: {{ order.total|sylius_price }}</strong></p>
+{% endblock %}

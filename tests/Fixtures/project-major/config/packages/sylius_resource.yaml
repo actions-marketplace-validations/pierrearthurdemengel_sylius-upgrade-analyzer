@@ -1,0 +1,19 @@
+sylius_resource:
+    resources:
+        app.product_review:
+            driver: doctrine/orm
+            classes:
+                model: App\Entity\Product\ProductReview
+                repository: App\Repository\ProductReviewRepository
+                form: App\Form\Type\ProductReviewType
+        app.return_request:
+            driver: doctrine/orm
+            classes:
+                model: App\Entity\Order\ReturnRequest
+                repository: App\Repository\ReturnRequestRepository
+                controller: App\Controller\ReturnRequestController
+        app.blog_post:
+            driver: doctrine/orm
+            classes:
+                model: App\Entity\Blog\BlogPost
+                repository: App\Repository\BlogPostRepository

@@ -1,0 +1,122 @@
+winzou_state_machine:
+    sylius_order:
+        class: App\Entity\Order\Order
+        property_path: state
+        graph: sylius_order
+        states:
+            - cart
+            - new
+            - confirmed
+            - cancelled
+            - fulfilled
+        transitions:
+            create:
+                from: [cart]
+                to: new
+            confirm:
+                from: [new]
+                to: confirmed
+            cancel:
+                from: [new, confirmed]
+                to: cancelled
+            fulfill:
+                from: [confirmed]
+                to: fulfilled
+        callbacks:
+            after:
+                app_send_confirmation:
+                    on: confirm
+                    do: ['@app.mailer.order_confirmation', sendConfirmation]
+                    args: [object]
+                app_notify_warehouse:
+                    on: fulfill
+                    do: ['@app.warehouse.notifier', notifyFulfillment]
+                    args: [object]
+            guard:
+                app_check_stock:
+                    on: confirm
+                    do: ['@app.stock.checker', isAvailable]
+                    args: [object]
+
+    sylius_payment:
+        class: App\Entity\Payment\Payment
+        property_path: state
+        graph: sylius_payment
+        states:
+            - cart
+            - new
+            - processing
+            - completed
+            - failed
+            - cancelled
+            - refunded
+        transitions:
+            create:
+                from: [cart]
+                to: new
+            process:
+                from: [new]
+                to: processing
+            complete:
+                from: [new, processing]
+                to: completed
+            fail:
+                from: [new, processing]
+                to: failed
+            cancel:
+                from: [new, processing]
+                to: cancelled
+            refund:
+                from: [completed]
+                to: refunded
+        callbacks:
+            before:
+                app_validate_payment:
+                    on: complete
+                    do: ['@app.payment.validator', validate]
+                    args: [object]
+            after:
+                app_capture_payment:
+                    on: complete
+                    do: ['@app.payment.processor', capture]
+                    args: [object]
+
+    sylius_shipping:
+        class: App\Entity\Shipping\Shipment
+        property_path: state
+        graph: sylius_shipping
+        states:
+            - cart
+            - ready
+            - shipped
+            - cancelled
+        transitions:
+            create:
+                from: [cart]
+                to: ready
+            ship:
+                from: [ready]
+                to: shipped
+            cancel:
+                from: [ready]
+                to: cancelled
+
+    app_return:
+        class: App\Entity\Order\ReturnRequest
+        property_path: state
+        graph: app_return
+        states:
+            - pending
+            - approved
+            - rejected
+            - completed
+        transitions:
+            approve:
+                from: [pending]
+                to: approved
+            reject:
+                from: [pending]
+                to: rejected
+            complete:
+                from: [approved]
+                to: completed

@@ -1,0 +1,34 @@
+{% extends '@SyliusShop/Checkout/layout.html.twig' %}
+
+{% block checkout_content %}
+<div class="ui segment">
+    <h2 class="ui header">{{ 'sylius.ui.address'|trans }}</h2>
+    {{ form_start(form) }}
+    <div class="ui two column stackable grid">
+        <div class="column">
+            <h3 class="ui sub header">{{ 'sylius.ui.billing_address'|trans }}</h3>
+            <div class="ui form">
+                {{ form_row(form.billingAddress.firstName) }}
+                {{ form_row(form.billingAddress.lastName) }}
+                {{ form_row(form.billingAddress.street) }}
+                {{ form_row(form.billingAddress.city) }}
+                {{ form_row(form.billingAddress.postcode) }}
+                {{ form_row(form.billingAddress.countryCode) }}
+            </div>
+        </div>
+        <div class="column">
+            <h3 class="ui sub header">{{ 'sylius.ui.shipping_address'|trans }}</h3>
+            <div class="ui form">
+                {{ form_row(form.shippingAddress.firstName) }}
+                {{ form_row(form.shippingAddress.lastName) }}
+                {{ form_row(form.shippingAddress.street) }}
+                {{ form_row(form.shippingAddress.city) }}
+                {{ form_row(form.shippingAddress.postcode) }}
+                {{ form_row(form.shippingAddress.countryCode) }}
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="ui primary button">{{ 'sylius.ui.next'|trans }}</button>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

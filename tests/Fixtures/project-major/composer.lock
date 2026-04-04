@@ -1,0 +1,122 @@
+{
+    "_readme": [
+        "This is a minimal fixture composer.lock for testing purposes."
+    ],
+    "content-hash": "fixture-hash-for-testing",
+    "packages": [
+        {
+            "name": "sylius/sylius",
+            "version": "v1.11.0",
+            "type": "library"
+        },
+        {
+            "name": "winzou/state-machine-bundle",
+            "version": "v0.6.2",
+            "type": "symfony-bundle"
+        },
+        {
+            "name": "swiftmailer/swiftmailer",
+            "version": "v6.3.0",
+            "type": "library"
+        },
+        {
+            "name": "payum/core",
+            "version": "1.7.4",
+            "type": "library"
+        },
+        {
+            "name": "payum/payum-bundle",
+            "version": "2.5.1",
+            "type": "symfony-bundle"
+        },
+        {
+            "name": "api-platform/core",
+            "version": "v2.7.18",
+            "type": "library"
+        },
+        {
+            "name": "bitbag/sylius-cms-plugin",
+            "version": "v4.0.3",
+            "type": "sylius-plugin"
+        },
+        {
+            "name": "bitbag/sylius-wishlist-plugin",
+            "version": "v2.0.1",
+            "type": "sylius-plugin"
+        },
+        {
+            "name": "bitbag/sylius-elasticsearch-plugin",
+            "version": "v1.0.5",
+            "type": "sylius-plugin"
+        },
+        {
+            "name": "bitbag/sylius-shipping-export-plugin",
+            "version": "v1.0.2",
+            "type": "sylius-plugin"
+        },
+        {
+            "name": "sylius/invoicing-plugin",
+            "version": "v0.20.1",
+            "type": "sylius-plugin"
+        },
+        {
+            "name": "sylius/refund-plugin",
+            "version": "v1.2.3",
+            "type": "sylius-plugin"
+        },
+        {
+            "name": "setono/sylius-analytics-plugin",
+            "version": "v3.0.1",
+            "type": "sylius-plugin"
+        },
+        {
+            "name": "mangoweb-sylius/sylius-extended-channels",
+            "version": "v0.5.0",
+            "type": "sylius-plugin"
+        },
+        {
+            "name": "stefandoorn/sylius-google-tag-manager-enhanced-ecommerce-plugin",
+            "version": "v1.0.4",
+            "type": "sylius-plugin"
+        },
+        {
+            "name": "odiseo/sylius-blog-plugin",
+            "version": "v0.8.2",
+            "type": "sylius-plugin"
+        },
+        {
+            "name": "monsieurbiz/sylius-rich-editor-plugin",
+            "version": "v2.0.3",
+            "type": "sylius-plugin"
+        },
+        {
+            "name": "monsieurbiz/sylius-search-plugin",
+            "version": "v2.0.1",
+            "type": "sylius-plugin"
+        },
+        {
+            "name": "synolia/sylius-akeneo-plugin",
+            "version": "v3.0.0",
+            "type": "sylius-plugin"
+        },
+        {
+            "name": "stripe/stripe-php",
+            "version": "v10.21.0",
+            "type": "library"
+        }
+    ],
+    "packages-dev": [
+        {
+            "name": "phpunit/phpunit",
+            "version": "10.5.0",
+            "type": "library"
+        },
+        {
+            "name": "friends-of-behat/mink",
+            "version": "v1.9.0",
+            "type": "library"
+        }
+    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

@@ -1,0 +1,99 @@
+sylius_grid:
+    grids:
+        app_admin_order:
+            driver:
+                name: doctrine/orm
+                options:
+                    class: App\Entity\Order\Order
+            sorting:
+                createdAt: desc
+            fields:
+                number:
+                    type: string
+                    label: sylius.ui.number
+                date:
+                    type: datetime
+                    label: sylius.ui.date
+                    options:
+                        format: 'd-m-Y H:i'
+                channel:
+                    type: twig
+                    label: sylius.ui.channel
+                    options:
+                        template: "@SyliusAdmin/Grid/Field/channel.html.twig"
+                state:
+                    type: twig
+                    label: sylius.ui.state
+                    options:
+                        template: "admin/grid/field/state.html.twig"
+                total:
+                    type: twig
+                    label: sylius.ui.total
+                    options:
+                        template: "@SyliusAdmin/Grid/Field/total.html.twig"
+            filters:
+                number:
+                    type: string
+                channel:
+                    type: entity
+                    options:
+                        fields: [channel]
+                state:
+                    type: select
+                    form_options:
+                        choices:
+                            new: new
+                            confirmed: confirmed
+                            fulfilled: fulfilled
+                            cancelled: cancelled
+            actions:
+                main:
+                    create:
+                        type: create
+                item:
+                    show:
+                        type: show
+                    custom_export:
+                        type: custom
+                        label: Export PDF
+                        options:
+                            link:
+                                route: app_admin_order_export
+                                parameters:
+                                    id: resource.id
+
+        app_admin_product:
+            driver:
+                name: doctrine/orm
+                options:
+                    class: App\Entity\Product\Product
+            sorting:
+                createdAt: desc
+            fields:
+                name:
+                    type: string
+                    label: sylius.ui.name
+                code:
+                    type: string
+                    label: sylius.ui.code
+            filters:
+                search:
+                    type: string
+                    options:
+                        fields: [name, code]
+
+        app_admin_customer:
+            driver:
+                name: doctrine/orm
+                options:
+                    class: App\Entity\Customer\Customer
+            fields:
+                email:
+                    type: string
+                    label: sylius.ui.email
+                firstName:
+                    type: string
+                    label: sylius.ui.first_name
+                lastName:
+                    type: string
+                    label: sylius.ui.last_name
