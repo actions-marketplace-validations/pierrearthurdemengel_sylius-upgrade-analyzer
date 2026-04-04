@@ -1,6 +1,9 @@
 {
     "name": "acme-sylius-extreme-shop",
     "private": true,
+    "engines": {
+        "node": ">=16"
+    },
     "dependencies": {
         "jquery": "^3.6",
         "semantic-ui-css": "^2.4",

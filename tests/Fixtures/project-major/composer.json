@@ -24,7 +24,15 @@
         "monsieurbiz/sylius-rich-editor-plugin": "^2.0",
         "monsieurbiz/sylius-search-plugin": "^2.0",
         "synolia/sylius-akeneo-plugin": "^3.0",
-        "stripe/stripe-php": "^10.0"
+        "stripe/stripe-php": "^10.0",
+        "sylius/calendar": "^0.3",
+        "friendsofsymfony/rest-bundle": "^3.0",
+        "jms/serializer-bundle": "^4.0",
+        "willdurand/hateoas-bundle": "^2.0",
+        "sylius-labs/polyfill-symfony-security": "^1.0",
+        "symfony/framework-bundle": "^5.4",
+        "symfony/security-bundle": "^5.4",
+        "symfony/twig-bundle": "^5.4"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0",

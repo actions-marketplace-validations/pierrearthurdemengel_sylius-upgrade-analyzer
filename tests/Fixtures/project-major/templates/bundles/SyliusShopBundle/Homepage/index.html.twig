@@ -1,0 +1,11 @@
+{% extends '@SyliusShop/layout.html.twig' %}
+
+{% block content %}
+<div class="ui container">
+    {{ sonata_block_render_event('sylius.shop.homepage') }}
+    {{ sonata_block_render_event('sylius.shop.homepage.after_products') }}
+    {{ sonata_block_render_event('sylius.shop.homepage.sidebar') }}
+    {{ sylius_template_event('sylius.shop.layout.header') }}
+    {{ sylius_template_event('sylius.shop.layout.footer') }}
+</div>
+{% endblock %}

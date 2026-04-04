@@ -1,0 +1,8 @@
+App\Entity\Product\Product:
+    attributes:
+        name:
+            groups: ['admin:product:index', 'shop:product:read']
+        code:
+            groups: ['admin:product:read']
+        price:
+            groups: ['shop:product:read', 'admin:product:read']

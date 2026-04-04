@@ -1,0 +1,57 @@
+services:
+    App\Controller\DashboardController:
+        arguments:
+            $statisticsProvider: '@sylius.dashboard.statistics_provider'
+            $dashboardController: '@sylius.controller.admin.dashboard'
+            $notificationController: '@sylius.controller.admin.notification'
+
+    App\Twig\SortExtension:
+        arguments:
+            $sortExtension: '@sylius.twig.extension.sort_by'
+
+    App\Twig\TemplateEventExtension:
+        arguments:
+            $templateEvent: '@sylius.twig.extension.template_event'
+
+    App\Twig\TaxExtension:
+        arguments:
+            $taxExtension: '@sylius.twig.extension.taxes'
+
+    App\Service\ZoneMatcher:
+        arguments:
+            $zoneMatcher: '@sylius.zone_matcher'
+
+    App\Service\AddressService:
+        arguments:
+            $comparator: '@sylius.address_comparator'
+            $provinceProvider: '@sylius.province_naming_provider'
+
+    App\Service\SecurityService:
+        arguments:
+            $passwordHasher: '@sylius.security.password_hasher'
+            $userLogin: '@sylius.security.user_login'
+
+    App\Service\PaymentService:
+        arguments:
+            $payumController: '@sylius.controller.payum'
+            $stripeForm: '@sylius.form.type.gateway_configuration.stripe'
+            $formRegistry: '@sylius.form_registry.payum_gateway_config'
+
+    App\Service\EmailService:
+        arguments:
+            $shipmentEmailManager: '@sylius.email_manager.shipment'
+            $contactEmailManager: '@sylius.email_manager.contact'
+            $orderEmailManager: '@sylius.email_manager.order'
+
+    App\Service\ProductService:
+        arguments:
+            $httpFactory: '@sylius.http_message_factory'
+            $optionChoice: '@sylius.form.type.product_option_choice'
+
+    App\Service\GridService:
+        arguments:
+            $entityFilter: '@sylius.grid_filter.entities'
+
+    App\Service\PaypalService:
+        arguments:
+            $paypalAction: '@sylius.payum_action.paypal_express_checkout.convert_payment'

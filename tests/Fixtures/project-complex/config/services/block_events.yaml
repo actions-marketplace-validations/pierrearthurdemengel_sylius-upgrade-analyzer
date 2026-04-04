@@ -1,0 +1,8 @@
+services:
+    app.block_event_listener.homepage:
+        class: Sylius\Bundle\UiBundle\Block\BlockEventListener
+        arguments:
+            - '@twig'
+            - 'Block/homepage_banner.html.twig'
+        tags:
+            - { name: kernel.event_listener, event: sylius.ui.homepage, method: onBlockEvent }

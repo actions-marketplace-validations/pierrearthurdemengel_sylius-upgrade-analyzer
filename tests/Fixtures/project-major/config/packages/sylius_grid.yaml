@@ -97,3 +97,12 @@ sylius_grid:
                 lastName:
                     type: string
                     label: sylius.ui.last_name
+            filters:
+                group:
+                    type: entities
+                    options:
+                        field: group
+                country:
+                    type: entities
+                    options:
+                        field: country

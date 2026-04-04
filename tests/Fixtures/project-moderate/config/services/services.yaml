@@ -1,0 +1,8 @@
+services:
+    App\Controller\DashboardController:
+        arguments:
+            $statisticsProvider: '@sylius.dashboard.statistics_provider'
+
+    App\Twig\SortExtension:
+        arguments:
+            $sortExtension: '@sylius.twig.extension.sort_by'

@@ -1,0 +1,7 @@
+framework:
+    messenger:
+        default_bus: sylius_default.bus
+        buses:
+            sylius_default.bus:
+                middleware:
+                    - doctrine_transaction

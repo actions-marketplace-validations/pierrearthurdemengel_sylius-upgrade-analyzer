@@ -1,0 +1,24 @@
+services:
+    app.block_event_listener.homepage:
+        class: Sylius\Bundle\UiBundle\Block\BlockEventListener
+        arguments:
+            - '@twig'
+            - 'Block/homepage_banner.html.twig'
+        tags:
+            - { name: kernel.event_listener, event: sylius.ui.homepage, method: onBlockEvent }
+
+    app.block_event_listener.sidebar:
+        class: Sylius\Bundle\UiBundle\Block\BlockEventListener
+        arguments:
+            - '@twig'
+            - 'Block/sidebar_widget.html.twig'
+        tags:
+            - { name: kernel.event_listener, event: sylius.ui.admin.sidebar, method: onBlockEvent }
+
+    app.block_event_listener.footer:
+        class: Sylius\Bundle\UiBundle\Block\BlockEventListener
+        arguments:
+            - '@twig'
+            - 'Block/footer_links.html.twig'
+        tags:
+            - { name: kernel.event_listener, event: sylius.ui.footer, method: onBlockEvent }

@@ -1,0 +1,8 @@
+{% extends '@SyliusAdmin/layout.html.twig' %}
+
+{% block content %}
+<div class="ui segment">
+    <a href="{{ path('sylius_admin_ajax_generate_product_slug') }}">Generate slug</a>
+    <a href="{{ path('sylius_admin_get_product_attributes') }}">Get attributes</a>
+</div>
+{% endblock %}

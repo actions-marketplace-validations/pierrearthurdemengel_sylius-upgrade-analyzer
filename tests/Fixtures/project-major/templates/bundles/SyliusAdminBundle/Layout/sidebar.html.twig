@@ -1,0 +1,6 @@
+{% block sidebar %}
+<div class="ui sidebar">
+    {{ sonata_block_render_event('sylius.admin.layout.sidebar') }}
+    {{ sylius_template_event('sylius.admin.layout.sidebar.menu') }}
+</div>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% if use_webpack %}
+    {{ encore_entry_script_tags('admin') }}
+{% else %}
+    <script src="{{ asset('build/admin.js') }}"></script>
+{% endif %}

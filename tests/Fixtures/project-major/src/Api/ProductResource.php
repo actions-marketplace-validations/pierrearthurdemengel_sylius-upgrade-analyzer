@@ -12,8 +12,8 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  * @ApiResource(
  *     collectionOperations={"get", "post"},
  *     itemOperations={"get", "put", "delete"},
- *     normalizationContext={"groups"={"product:read"}},
- *     denormalizationContext={"groups"={"product:write"}}
+ *     normalizationContext={"groups"={"admin:product:read"}},
+ *     denormalizationContext={"groups"={"admin:product:write"}}
  * )
  * @ApiFilter(SearchFilter::class, properties={"name": "partial", "code": "exact"})
  */

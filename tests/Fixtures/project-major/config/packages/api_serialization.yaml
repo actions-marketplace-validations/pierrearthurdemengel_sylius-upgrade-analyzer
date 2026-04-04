@@ -1,0 +1,14 @@
+api_platform:
+    mapping:
+        paths:
+            - '%kernel.project_dir%/config/api_platform'
+    formats:
+        json: ['application/json']
+        jsonld: ['application/ld+json']
+
+# Custom serialization groups configuration
+framework:
+    serializer:
+        mapping:
+            paths:
+                - '%kernel.project_dir%/config/serialization'

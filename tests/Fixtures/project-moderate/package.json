@@ -1,0 +1,13 @@
+{
+    "name": "acme-sylius-moderate",
+    "private": true,
+    "engines": {
+        "node": ">=18"
+    },
+    "dependencies": {
+        "jquery": "^3.6"
+    },
+    "devDependencies": {
+        "@symfony/webpack-encore": "^2.0"
+    }
+}

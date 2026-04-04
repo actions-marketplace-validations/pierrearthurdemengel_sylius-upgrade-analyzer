@@ -104,8 +104,8 @@ final class TwigTemplateOverrideAnalyzerTest extends TestCase
 
         $analyzer->analyze($report);
 
-        /* Le projet modéré contient 2 templates surchargés */
-        self::assertCount(2, $report->getIssues());
+        /* Le projet modere contient 4 templates surcharges */
+        self::assertCount(4, $report->getIssues());
     }
 
     /**
@@ -119,8 +119,8 @@ final class TwigTemplateOverrideAnalyzerTest extends TestCase
 
         $analyzer->analyze($report);
 
-        /* Le projet complexe contient 8 templates surchargés */
-        self::assertCount(8, $report->getIssues());
+        /* Le projet complexe contient 12 templates surcharges */
+        self::assertCount(12, $report->getIssues());
     }
 
     /**

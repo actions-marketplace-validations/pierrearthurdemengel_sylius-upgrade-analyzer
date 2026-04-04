@@ -1,0 +1,24 @@
+services:
+    App\Controller\DashboardController:
+        arguments:
+            $statisticsProvider: '@sylius.dashboard.statistics_provider'
+
+    App\Twig\SortExtension:
+        arguments:
+            $sortExtension: '@sylius.twig.extension.sort_by'
+
+    App\Twig\TemplateEventExtension:
+        arguments:
+            $templateEvent: '@sylius.twig.extension.template_event'
+
+    App\Service\ZoneMatcher:
+        arguments:
+            $zoneMatcher: '@sylius.zone_matcher'
+
+    App\Service\AddressService:
+        arguments:
+            $comparator: '@sylius.address_comparator'
+
+    App\Service\PaymentService:
+        arguments:
+            $formRegistry: '@sylius.form_registry.payum_gateway_config'

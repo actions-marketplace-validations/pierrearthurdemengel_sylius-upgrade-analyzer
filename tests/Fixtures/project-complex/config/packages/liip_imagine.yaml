@@ -1,0 +1,16 @@
+liip_imagine:
+    resolvers:
+        default:
+            web_path:
+                web_root: '%kernel.project_dir%/public'
+    loaders:
+        default:
+            filesystem:
+                data_root: '%kernel.project_dir%/public/media'
+    filter_sets:
+        sylius_shop_product_thumbnail:
+            filters:
+                thumbnail: { size: [260, 260], mode: outbound }
+        sylius_shop_product_large:
+            filters:
+                thumbnail: { size: [800, 800], mode: outbound }

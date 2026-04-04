@@ -1,0 +1,13 @@
+sylius_ui:
+    use_webpack: true
+    events:
+        sylius.shop.layout.header:
+            blocks:
+                logo:
+                    template: "@SyliusShop/Header/_logo.html.twig"
+                cart:
+                    template: "@SyliusShop/Header/_cart.html.twig"
+        sylius.admin.layout.sidebar:
+            blocks:
+                menu:
+                    template: "@SyliusAdmin/Layout/_sidebar.html.twig"

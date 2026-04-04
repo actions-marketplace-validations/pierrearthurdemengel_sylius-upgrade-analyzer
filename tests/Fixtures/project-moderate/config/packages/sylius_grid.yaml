@@ -1,0 +1,12 @@
+sylius_grid:
+    grids:
+        app_admin_product:
+            driver:
+                name: doctrine/orm
+                options:
+                    class: App\Entity\Product\Product
+            filters:
+                taxon:
+                    type: entities
+                    options:
+                        field: taxon

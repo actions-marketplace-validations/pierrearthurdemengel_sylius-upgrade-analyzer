@@ -1,0 +1,7 @@
+sylius_ui:
+    use_webpack: true
+    events:
+        sylius.shop.layout.header:
+            blocks:
+                logo:
+                    template: "@SyliusShop/Header/_logo.html.twig"

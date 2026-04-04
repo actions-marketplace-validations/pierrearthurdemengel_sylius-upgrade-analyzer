@@ -21,7 +21,10 @@
         "swiftmailer/swiftmailer": "^6.0",
         "payum/core": "^1.7",
         "payum/payum-bundle": "^2.0",
-        "winzou/state-machine-bundle": "^0.6"
+        "winzou/state-machine-bundle": "^0.6",
+        "sylius/calendar": "^0.3",
+        "friendsofsymfony/rest-bundle": "^3.0",
+        "jms/serializer-bundle": "^4.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",

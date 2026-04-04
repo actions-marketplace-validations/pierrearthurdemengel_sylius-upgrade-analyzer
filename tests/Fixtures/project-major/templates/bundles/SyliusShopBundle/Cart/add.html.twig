@@ -1,0 +1,10 @@
+{% extends '@SyliusShop/layout.html.twig' %}
+
+{% block content %}
+<form action="{{ url('sylius_shop_ajax_cart_add_item') }}" method="post">
+    <button type="submit">Add to cart</button>
+</form>
+<a href="{{ path('sylius_shop_partial_cart_summary') }}">Cart summary</a>
+<a href="{{ path('sylius_shop_ajax_cart_item_remove') }}">Remove item</a>
+<a href="{{ path('sylius_shop_ajax_user_check_action') }}">Check user</a>
+{% endblock %}

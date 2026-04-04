@@ -14,3 +14,12 @@ sylius_grid:
                 state:
                     type: string
                     label: sylius.ui.state
+            filters:
+                channel:
+                    type: entities
+                    options:
+                        field: channel
+                taxon:
+                    type: entities
+                    options:
+                        field: taxon

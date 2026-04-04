@@ -1,0 +1,14 @@
+app_api_avatar:
+    path: /api/v2/admin/avatar-images/{id}
+    controller: api_platform.action.post_item
+    methods: [POST]
+
+app_api_gateway:
+    path: /api/v2/admin/gateway-configs
+    controller: api_platform.action.post_item
+    methods: [GET]
+
+app_api_zone_members:
+    path: /api/v2/admin/zone-members
+    controller: api_platform.action.post_item
+    methods: [GET]

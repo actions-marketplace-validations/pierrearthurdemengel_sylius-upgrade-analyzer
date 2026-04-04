@@ -1,0 +1,9 @@
+{% extends '@SyliusShop/layout.html.twig' %}
+
+{% block content %}
+<div class="ui segment">
+    <a href="{{ path('sylius_shop_partial_channel_menu_taxon_index') }}">Menu taxons</a>
+    <a href="{{ path('sylius_shop_partial_taxon_index_by_code') }}">Taxon by code</a>
+    <a href="{{ path('sylius_shop_partial_taxon_show_by_slug') }}">Taxon by slug</a>
+</div>
+{% endblock %}

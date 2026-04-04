@@ -1,0 +1,12 @@
+framework:
+    messenger:
+        default_bus: sylius_default.bus
+        buses:
+            sylius_default.bus:
+                middleware:
+                    - doctrine_transaction
+        transports:
+            sylius_payment_request:
+                dsn: '%env(SYLIUS_MESSENGER_TRANSPORT_PAYMENT_REQUEST_DSN)%'
+            sylius_payment_request_failed:
+                dsn: '%env(SYLIUS_MESSENGER_TRANSPORT_PAYMENT_REQUEST_FAILED_DSN)%'

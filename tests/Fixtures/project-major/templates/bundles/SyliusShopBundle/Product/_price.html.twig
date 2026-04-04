@@ -1,0 +1,7 @@
+{% if use_webpack %}
+    <div class="ui label">
+        {{ product.price|sylius_format_money }}
+    </div>
+{% else %}
+    <span class="price">{{ product.price|sylius_format_money }}</span>
+{% endif %}

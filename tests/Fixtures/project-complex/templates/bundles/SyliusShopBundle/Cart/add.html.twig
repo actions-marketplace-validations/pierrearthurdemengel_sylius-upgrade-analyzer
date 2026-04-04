@@ -1,0 +1,7 @@
+{% extends '@SyliusShop/layout.html.twig' %}
+
+{% block content %}
+<form action="{{ url('sylius_shop_ajax_cart_add_item') }}" method="post">
+    <button type="submit">Add to cart</button>
+</form>
+{% endblock %}

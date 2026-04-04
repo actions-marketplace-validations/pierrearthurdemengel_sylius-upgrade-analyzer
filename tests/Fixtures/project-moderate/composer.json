@@ -11,7 +11,8 @@
         "bitbag/sylius-wishlist-plugin": "^2.0",
         "setono/sylius-analytics-plugin": "^1.0",
         "some-vendor/unknown-sylius-plugin": "^1.0",
-        "winzou/state-machine-bundle": "^0.6"
+        "winzou/state-machine-bundle": "^0.6",
+        "sylius/calendar": "^0.3"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
