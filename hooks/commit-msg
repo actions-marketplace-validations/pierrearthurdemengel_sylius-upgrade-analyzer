@@ -1,0 +1,6 @@
+#!/bin/sh
+# Bloque le commit si une ligne Co-authored-by est présente.
+if grep -iE '^Co-authored-by:' "$1" > /dev/null 2>&1; then
+    echo "Erreur : Co-authored-by détecté. Supprimer la ligne et recommencer."
+    exit 1
+fi

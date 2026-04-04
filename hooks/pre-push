@@ -1,0 +1,16 @@
+#!/bin/sh
+# Bloque le push si un commit de ce lot contient une ligne Co-authored-by.
+while read local_ref local_sha remote_ref remote_sha; do
+    if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then continue; fi
+    if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+        range="$local_sha"
+    else
+        range="$remote_sha..$local_sha"
+    fi
+    if git log --format="%B" $range 2>/dev/null | grep -iE '^Co-authored-by:' > /dev/null 2>&1; then
+        echo "Push bloqué : Co-authored-by détecté dans l'historique."
+        echo "Corriger avec : git rebase -i <sha>^ puis reword le commit."
+        exit 1
+    fi
+done
+exit 0

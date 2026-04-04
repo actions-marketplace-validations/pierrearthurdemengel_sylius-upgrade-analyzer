@@ -1,0 +1,26 @@
+# Configuration locale
+CLAUDE.md
+SPEC-SYLIUS-UPGRADE-ANALYZER.md
+SUIVI-SYLIUS-UPGRADE-ANALYZER.md
+PROMPT-SYLIUS-UPGRADE-ANALYZER.md
+
+# Dépendances
+/vendor/
+
+# Cache et build
+/.php-cs-fixer.cache
+/.phpunit.cache
+/.phpstan/
+/coverage/
+*.cache
+
+# Editeurs et OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
