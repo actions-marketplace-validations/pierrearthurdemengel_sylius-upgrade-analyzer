@@ -91,10 +91,11 @@ Coverage is built from the official [UPGRADE-2.0.md](https://github.com/Sylius/S
 | 47 | API Endpoint Restructure | 8+ restructured/removed API endpoint paths |
 | 48 | API Query Extension Signature | `$operationName` to `Operation $operation` parameter change |
 
-### 5 Output Reporters
+### 6 Output Reporters
 
 - **Console** -- Rich terminal output with ASCII gauge, colored severity levels, category breakdown
 - **JSON** -- Machine-readable structured report
+- **CSV** -- Excel-compatible export (UTF-8 BOM, semicolon separator) via `--format=csv`
 - **SARIF** -- Static Analysis Results Interchange Format (GitHub Code Scanning compatible)
 - **Markdown** -- Human-readable report with tables, suitable for PRs and wikis
 - **PDF** -- Professional report for stakeholders (via `--pdf` flag)
@@ -164,6 +165,19 @@ vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --format=markdown --ou
 
 # PDF report
 vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --pdf
+
+# CSV export (Excel-compatible)
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --format=csv --output=report.csv
+```
+
+### Project Naming
+
+```bash
+# Explicit project name (included in meta.project_name)
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --project-name="My Shop"
+
+# Auto-detected from composer.json "name" field or directory name
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze
 ```
 
 ### Filtering Analyzers
@@ -212,6 +226,55 @@ vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --diff
 ```bash
 # Generate a sprint plan with team velocity of 40h/sprint
 vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --sprint-plan --velocity=40
+```
+
+### Upload Report for PDF Generation
+
+```bash
+# Generate JSON first, then upload
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --format=json --output=report.json
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:upload report.json --api-key=sua_xxx --output=report.pdf
+```
+
+### Multi-Project Analysis (Agency)
+
+```bash
+# Analyze multiple projects and generate a consolidated PDF
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:multi-analyze \
+  /path/to/project1 /path/to/project2 /path/to/project3 \
+  --api-key=sua_agy_xxx --output=consolidated-report.pdf --tjm=600
+```
+
+### Compare Reports
+
+```bash
+# Compare two local JSON reports
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:compare before.json after.json
+
+# Compare two reports via API (by report ID)
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:compare \
+  --before-id=uuid1 --after-id=uuid2 --api-key=sua_agy_xxx
+```
+
+### Report History (Agency)
+
+```bash
+# View past reports
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:history --api-key=sua_agy_xxx --limit=10
+```
+
+### Webhook Management (Agency)
+
+```bash
+# View current webhook config
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:webhook get --api-key=sua_agy_xxx
+
+# Set a webhook
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:webhook set \
+  --url=https://hooks.example.com/migration --secret=mysecret --api-key=sua_agy_xxx
+
+# Delete webhook
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:webhook delete --api-key=sua_agy_xxx
 ```
 
 ---

@@ -7,6 +7,25 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-04-05
+
+### Added
+- Option `--project-name` sur la commande `analyze` (déduit depuis composer.json ou nom du répertoire)
+- Champ `meta.project_name` dans le rapport JSON
+- CsvReporter : export CSV avec BOM UTF-8, séparateur `;`, compatible Excel (`--format=csv`)
+- ApiClient centralisé pour les appels vers le service distant
+- ReportLoader : utilitaire de chargement/reconstruction de rapports depuis JSON
+- ApiKeyResolverTrait : résolution clé API partagée entre commandes
+- Commande `sylius-upgrade:upload` enregistrée dans le binaire (existait mais n'était pas câblée)
+- Commande `sylius-upgrade:multi-analyze` : analyse N projets, PDF consolidé (Agency, `POST /v1/reports/multi`)
+- Commande `sylius-upgrade:compare` : diff de deux rapports (fichiers locaux ou IDs via API)
+- Commande `sylius-upgrade:history` : historique des rapports (`GET /v1/reports/history`)
+- Commande `sylius-upgrade:webhook` : gestion webhook get/set/delete (`/v1/settings/webhook`)
+
+### Changed
+- `JsonReporter::buildReportData()` rendu public pour réutilisation par multi-analyze
+- Version bumped de 1.1.0 à 1.2.0
+
 ## [1.1.0] - 2026-04-04
 
 ### Added
