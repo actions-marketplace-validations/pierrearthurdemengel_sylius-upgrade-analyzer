@@ -15,6 +15,9 @@ final class MigrationReport
 
     private ?\DateTimeImmutable $completedAt = null;
 
+    /** Nom du projet, déduit du composer.json ou du répertoire */
+    private ?string $projectName = null;
+
     /**
      * @param \DateTimeImmutable $startedAt             Horodatage du début de l'analyse
      * @param ?string           $detectedSyliusVersion  Version de Sylius détectée dans le projet
@@ -180,5 +183,15 @@ final class MigrationReport
     public function getProjectPath(): string
     {
         return $this->projectPath;
+    }
+
+    public function getProjectName(): ?string
+    {
+        return $this->projectName;
+    }
+
+    public function setProjectName(?string $projectName): void
+    {
+        $this->projectName = $projectName;
     }
 }
