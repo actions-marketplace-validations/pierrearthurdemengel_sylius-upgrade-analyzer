@@ -6,11 +6,13 @@
 [![CI](https://github.com/pierrearthurdemengel/sylius-upgrade-analyzer/actions/workflows/ci.yaml/badge.svg)](https://github.com/pierrearthurdemengel/sylius-upgrade-analyzer/actions/workflows/ci.yaml)
 [![License](https://img.shields.io/packagist/l/pierre-arthur/sylius-upgrade-analyzer)](LICENSE)
 
-**Automated migration audit CLI for Sylius 1.x to 2.x projects.**
+**Automated migration audit & auto-fix CLI for Sylius 1.x to 2.x projects.**
 
-Sylius Upgrade Analyzer scans your existing Sylius 1.x project, detects **every** breaking change, deprecated API, and incompatible pattern, then produces a detailed migration report with time estimates, fix suggestions, and (where possible) automatic corrections.
+Sylius Upgrade Analyzer scans your existing Sylius 1.x project, detects **every** breaking change, deprecated API, and incompatible pattern, then produces a detailed migration report with time estimates, fix suggestions, and **41 automatic corrections** covering the most common migration tasks.
 
 Coverage is built from the official [UPGRADE-2.0.md](https://github.com/Sylius/Sylius/blob/2.0/UPGRADE-2.0.md), [UPGRADE-API-2.0.md](https://github.com/Sylius/Sylius/blob/2.1/UPGRADE-API-2.0.md), and [CHANGELOG-2.0.md](https://github.com/Sylius/Sylius/blob/2.1/CHANGELOG-2.0.md). Nothing is left unchecked.
+
+**Web service available at [sylius-upgrade-analyzer.dev](https://sylius-upgrade-analyzer.dev)** -- upload your `composer.json`, get a professional PDF report with time estimates and migration roadmap.
 
 ---
 
@@ -98,7 +100,7 @@ Coverage is built from the official [UPGRADE-2.0.md](https://github.com/Sylius/S
 - **CSV** -- Excel-compatible export (UTF-8 BOM, semicolon separator) via `--format=csv`
 - **SARIF** -- Static Analysis Results Interchange Format (GitHub Code Scanning compatible)
 - **Markdown** -- Human-readable report with tables, suitable for PRs and wikis
-- **PDF** -- Professional report for stakeholders (via `--pdf` flag)
+- **PDF** -- Professional report for stakeholders (via [sylius-upgrade-analyzer.dev](https://sylius-upgrade-analyzer.dev))
 
 ### 41 Auto-Fixers
 
@@ -154,6 +156,9 @@ Run the analyzer in your CI pipeline, post PR comments, and upload SARIF to GitH
 - **Baseline management** -- save and diff results across runs
 - **Sprint planner** -- generate a migration roadmap with sprint breakdown
 - **Plugin compatibility** -- checks Sylius Addons Marketplace and Packagist
+- **Multi-project analysis** -- consolidated PDF for agencies managing multiple Sylius projects
+- **Report comparison** -- diff two reports to track migration progress
+- **Webhook notifications** -- get notified when a new report is generated
 
 ---
 
@@ -265,10 +270,12 @@ vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --sprint-plan --veloci
 ### Upload Report for PDF Generation
 
 ```bash
-# Generate JSON first, then upload
+# Generate JSON first, then upload for PDF generation
 vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --format=json --output=report.json
 vendor/bin/sylius-upgrade-analyzer sylius-upgrade:upload report.json --api-key=sua_xxx --output=report.pdf
 ```
+
+> **Tip:** You can also upload directly on [sylius-upgrade-analyzer.dev](https://sylius-upgrade-analyzer.dev) without an API key for a one-time report.
 
 ### Multi-Project Analysis (Agency)
 
@@ -514,6 +521,18 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for gu
 
 ---
 
+## Pricing
+
+The CLI tool is **free and open-source** (MIT License). Advanced features are available via [sylius-upgrade-analyzer.dev](https://sylius-upgrade-analyzer.dev):
+
+| Plan | Price | Includes |
+|------|-------|----------|
+| **Report** | 59 EUR (one-time) | 1 professional PDF report with migration roadmap |
+| **Studio** | 299 EUR/year | Unlimited reports + white-label PDFs (agency logo, colors) |
+| **Agency** | 799 EUR/year | Studio features + 4 seat keys + multi-project consolidated reports |
+
+---
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
@@ -524,4 +543,5 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 **Pierre-Arthur Demengel** -- [pierrearthur.demengel@gmail.com](mailto:pierrearthur.demengel@gmail.com)
 
-GitHub: [https://github.com/pierrearthurdemengel/sylius-upgrade-analyzer](https://github.com/pierrearthurdemengel/sylius-upgrade-analyzer)
+- GitHub: [github.com/pierrearthurdemengel/sylius-upgrade-analyzer](https://github.com/pierrearthurdemengel/sylius-upgrade-analyzer)
+- Website: [sylius-upgrade-analyzer.dev](https://sylius-upgrade-analyzer.dev)
