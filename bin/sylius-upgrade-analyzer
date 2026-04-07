@@ -112,6 +112,10 @@ use PierreArthur\SyliusUpgradeAnalyzer\AutoFix\TwigHookFixer;
 use PierreArthur\SyliusUpgradeAnalyzer\AutoFix\UseWebpackConfigFixer;
 use PierreArthur\SyliusUpgradeAnalyzer\AutoFix\UserEncoderFixer;
 use PierreArthur\SyliusUpgradeAnalyzer\AutoFix\WorkflowMigrationFixer;
+use PierreArthur\SyliusUpgradeAnalyzer\AutoFix\ConstructorSignatureFixer;
+use PierreArthur\SyliusUpgradeAnalyzer\AutoFix\DoctrineXmlMappingFixer;
+use PierreArthur\SyliusUpgradeAnalyzer\AutoFix\MultiStoreChannelFixer;
+use PierreArthur\SyliusUpgradeAnalyzer\AutoFix\UserModelFieldFixer;
 use PierreArthur\SyliusUpgradeAnalyzer\Command\AnalyzeCommand;
 use PierreArthur\SyliusUpgradeAnalyzer\Command\CompareCommand;
 use PierreArthur\SyliusUpgradeAnalyzer\Command\HistoryCommand;
@@ -259,6 +263,12 @@ $fixers = [
     new GridCustomizationFixer(),
     new ResourceBundleFixer(),
     new ApiPlatformMigrationFixer(),
+
+    /* Fixers v1.5.0 */
+    new MultiStoreChannelFixer(),
+    new ConstructorSignatureFixer(),
+    new UserModelFieldFixer(),
+    new DoctrineXmlMappingFixer(),
 ];
 $fixEngine = new FixEngine($fixers);
 
@@ -267,7 +277,7 @@ $apiClient = new ApiClient($httpClient);
 $reportUploader = new ReportUploader($httpClient);
 $reportLoader = new ReportLoader();
 
-$application = new Application('sylius-upgrade-analyzer', '1.4.0');
+$application = new Application('sylius-upgrade-analyzer', '1.5.0');
 $application->add(new AnalyzeCommand($analyzers, $reporters, $fixEngine));
 $application->add(new UploadCommand($reportUploader));
 $application->add(new MultiAnalyzeCommand($analyzers, $apiClient, $jsonReporter));

@@ -7,6 +7,19 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-04-07
+
+### Added
+- 4 nouveaux fixers automatiques (total : 45 fixers) couvrant les derniers analyseurs restants :
+  - MultiStoreChannelFixer (HIGH) : remplace `findOneByHostname()` → `findOneEnabledByHostname()`
+  - ConstructorSignatureFixer (MEDIUM) : ajoute un marqueur TODO sur les constructeurs surchargés de 24 classes Sylius modifiées
+  - UserModelFieldFixer (MEDIUM) : commente les propriétés/méthodes dépréciées (`locked`, `expiresAt`, `credentialsExpireAt`, `Serializable`)
+  - DoctrineXmlMappingFixer (LOW) : ajoute un marqueur TODO de conversion XML → attributs PHP sur les fichiers `*.orm.xml`
+- 21 nouveaux tests, 45 assertions
+
+### Changed
+- Version bumped de 1.4.0 à 1.5.0
+
 ## [1.4.0] - 2026-04-06
 
 ### Added
