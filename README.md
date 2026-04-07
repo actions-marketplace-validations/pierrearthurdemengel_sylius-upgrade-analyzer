@@ -8,7 +8,7 @@
 
 **Automated migration audit & auto-fix CLI for Sylius 1.x to 2.x projects.**
 
-Sylius Upgrade Analyzer scans your existing Sylius 1.x project, detects **every** breaking change, deprecated API, and incompatible pattern, then produces a detailed migration report with time estimates, fix suggestions, and **41 automatic corrections** covering the most common migration tasks.
+Sylius Upgrade Analyzer scans your existing Sylius 1.x project, detects **every** breaking change, deprecated API, and incompatible pattern, then produces a detailed migration report with time estimates, fix suggestions, and **45 automatic corrections** covering the most common migration tasks.
 
 Coverage is built from the official [UPGRADE-2.0.md](https://github.com/Sylius/Sylius/blob/2.0/UPGRADE-2.0.md), [UPGRADE-API-2.0.md](https://github.com/Sylius/Sylius/blob/2.1/UPGRADE-API-2.0.md), and [CHANGELOG-2.0.md](https://github.com/Sylius/Sylius/blob/2.1/CHANGELOG-2.0.md). Nothing is left unchecked.
 
@@ -102,7 +102,7 @@ Coverage is built from the official [UPGRADE-2.0.md](https://github.com/Sylius/S
 - **Markdown** -- Human-readable report with tables, suitable for PRs and wikis
 - **PDF** -- Professional report for stakeholders (via [sylius-upgrade-analyzer.dev](https://sylius-upgrade-analyzer.dev))
 
-### 41 Auto-Fixers
+### 45 Auto-Fixers
 
 | Fixer | Confidence | What it fixes |
 |-------|:----------:|---------------|
@@ -145,6 +145,10 @@ Coverage is built from the official [UPGRADE-2.0.md](https://github.com/Sylius/S
 | Grid Customization Fixer | MEDIUM | Replaces `field:` → `fields:` + `doctrine/orm` → `doctrine_orm` |
 | Resource Bundle Fixer | MEDIUM | Replaces `doctrine/orm` driver format, comments PHPCR/MongoDB drivers |
 | API Platform Migration Fixer | MEDIUM | Updates 7 namespace replacements (Core → Metadata/Symfony) + annotation → attribute |
+| Multi-Store Channel Fixer | HIGH | Replaces `findOneByHostname()` with `findOneEnabledByHostname()` |
+| Constructor Signature Fixer | MEDIUM | Adds TODO markers on overridden constructors of 24 changed Sylius classes |
+| User Model Field Fixer | MEDIUM | Comments deprecated `locked`, `expiresAt`, `credentialsExpireAt` fields and `Serializable` |
+| Doctrine XML Mapping Fixer | LOW | Adds TODO marker for `*.orm.xml` to PHP attribute conversion |
 
 ### GitHub Action
 
