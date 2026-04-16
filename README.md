@@ -18,7 +18,7 @@ Coverage is built from the official [UPGRADE-2.0.md](https://github.com/Sylius/S
 
 ## Features
 
-### 47 Built-in Analyzers
+### 49 Built-in Analyzers
 
 #### Templates & Frontend (5)
 
@@ -30,7 +30,7 @@ Coverage is built from the official [UPGRADE-2.0.md](https://github.com/Sylius/S
 | 4 | jQuery | jQuery / Semantic UI JS usage in assets |
 | 5 | Webpack Encore | `webpack.config.js` + `@symfony/webpack-encore` detection |
 
-#### Deprecations & Breaking Changes (28)
+#### Deprecations & Breaking Changes (36)
 
 | # | Analyzer | What it detects |
 |---|----------|-----------------|
@@ -62,36 +62,37 @@ Coverage is built from the official [UPGRADE-2.0.md](https://github.com/Sylius/S
 | 31 | Removed Route | 43 removed admin/shop routes (partials, AJAX, etc.) |
 | 32 | LiipImagine Config | Resolver/loader `"default"` to `"sylius_image"` |
 | 33 | Constructor Signature | 24 classes with changed constructor signatures |
-| 34 | Grid Filter Entity | `type: entities` to `type: entity`, `field:` to `fields:` |
-| 35 | Use Webpack Config | Removed `use_webpack` from `sylius_ui` config |
-| 36 | PHP Node Version | PHP 8.2+, Node.js 20+, Symfony 5.4 detection |
-| 37 | Class Move | 14 classes moved between bundles |
-| 38 | Service Visibility | Direct `$container->get('sylius.*')` calls (now private) |
-| 39 | Payment Request Env | Missing Messenger transport env vars for payments |
-| 40 | Deprecated Bundle Package | 7 removed packages (FOSRest, JMSSerializer, BazingaHateoas, etc.) |
+| 34 | Use Webpack Config | Removed `use_webpack` from `sylius_ui` config |
+| 35 | PHP Node Version | PHP 8.2+, Node.js 20+, Symfony 5.4 detection |
+| 36 | Class Move | 14 classes moved between bundles |
+| 37 | Service Visibility | Direct `$container->get('sylius.*')` calls (now private) |
+| 38 | Payment Request Env | Missing Messenger transport env vars for payments |
+| 39 | Deprecated Bundle Package | 7 removed packages (FOSRest, JMSSerializer, BazingaHateoas, etc.) |
+| 40 | Removed Config Key | Removed YAML config keys (`sylius_core.*`, `sylius_api.*`, MongoDB/PHPCR ODM) |
+| 41 | Routing Import | Legacy routing imports (Payum shop routes, API route parameter renames) |
 
 #### Plugins (1)
 
 | # | Analyzer | What it detects |
 |---|----------|-----------------|
-| 41 | Plugin Compatibility | Sylius plugins cross-referenced with Addons Marketplace + Packagist |
+| 42 | Plugin Compatibility | Sylius plugins cross-referenced with Addons Marketplace + Packagist |
 
 #### Grid & Resource (3)
 
 | # | Analyzer | What it detects |
 |---|----------|-----------------|
-| 42 | Grid Customization | Custom grid YAML + PHP grid classes + custom columns/filters |
-| 43 | Resource Bundle | SyliusResourceBundle config, custom factories/repositories |
-| 44 | Grid Filter Entity | `entities` to `entity` filter type + `field:` to `fields:` syntax |
+| 43 | Grid Customization | Custom grid YAML + PHP grid classes + custom columns/filters |
+| 44 | Resource Bundle | SyliusResourceBundle config, custom factories/repositories |
+| 45 | Grid Filter Entity | `type: entities` to `type: entity`, `field:` to `fields:` syntax |
 
 #### API Platform (4)
 
 | # | Analyzer | What it detects |
 |---|----------|-----------------|
-| 45 | API Platform Migration | @ApiResource, DataProvider/DataPersister, ApiPlatform\Core namespace |
-| 46 | API Serialization Group | Missing `sylius:` prefix on serialization groups |
-| 47 | API Endpoint Restructure | 8+ restructured/removed API endpoint paths |
-| 48 | API Query Extension Signature | `$operationName` to `Operation $operation` parameter change |
+| 46 | API Platform Migration | @ApiResource, DataProvider/DataPersister, ApiPlatform\Core namespace |
+| 47 | API Serialization Group | Missing `sylius:` prefix on serialization groups |
+| 48 | API Endpoint Restructure | 8+ restructured/removed API endpoint paths |
+| 49 | API Query Extension Signature | `$operationName` to `Operation $operation` parameter change |
 
 ### 6 Output Reporters
 
