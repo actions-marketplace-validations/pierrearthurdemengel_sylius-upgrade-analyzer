@@ -27,6 +27,10 @@ final class MarkdownReporter implements ReporterInterface
     {
         $markdown = $this->buildMarkdown($report);
 
+        if (MigrationServiceOffer::isEnabled($context)) {
+            $markdown .= "\n" . (new MigrationServiceOffer())->markdownLine() . "\n";
+        }
+
         /* Écriture dans un fichier si un chemin de sortie est fourni */
         if (isset($context['output_file']) && is_string($context['output_file'])) {
             $outputFile = $context['output_file'];
@@ -283,6 +287,7 @@ final class MarkdownReporter implements ReporterInterface
             Category::RESOURCE => 'Ressources',
             Category::FRONTEND => 'Frontend',
             Category::API => 'API',
+            Category::SECURITY => 'Sécurité',
         };
     }
 }

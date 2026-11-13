@@ -18,8 +18,13 @@ use Symfony\Component\Yaml\Yaml;
 
 /**
  * Analyseur de l'utilisation de Payum pour les paiements.
- * Sylius 2.0 introduit un nouveau systeme de paiement base sur les Payment Requests
- * qui remplace Payum. Cet analyseur detecte les gateways et usages a migrer.
+ *
+ * Sylius 2.0 ajoute les Payment Requests mais conserve Payum : payum/payum-bundle reste
+ * requis par sylius/sylius 2.0 et SyliusPayumBundle est maintenu (UPGRADE-2.0.md). Les
+ * gateways Payum continuent donc de fonctionner ; leur migration vers les Payment Requests
+ * est optionnelle et signalee en SUGGESTION, hors du total d'heures. Les changements
+ * obligatoires (passerelles Stripe et PayPal Express retirees, imports de routing et de
+ * configuration, services renommes) sont couverts par les analyseurs dedies.
  */
 final class PayumAnalyzer implements AnalyzerInterface
 {
@@ -28,6 +33,13 @@ final class PayumAnalyzer implements AnalyzerInterface
 
     /** Estimation en minutes par gateway standard */
     private const MINUTES_PER_STANDARD_GATEWAY = 120;
+
+    /**
+     * Estimation en minutes par fichier PHP dependant de Payum hors gateway factory
+     * (action Capture/Status/Notify, extension, requete) : chacun devient un handler
+     * de Payment Request, un travail comparable a la migration d'une gateway standard.
+     */
+    private const MINUTES_PER_PAYUM_DEPENDENT_FILE = 120;
 
     /** URL de la documentation Sylius sur les Payment Requests */
     private const DOC_URL = 'https://docs.sylius.com/migration-2.0/payment-requests';
@@ -69,77 +81,38 @@ final class PayumAnalyzer implements AnalyzerInterface
     {
         $projectPath = $report->getProjectPath();
 
-        /* Etape 1 : verification dans composer.json */
-        $this->analyzeComposerJson($report, $projectPath);
-
         /* Etape 2 : analyse des fichiers de configuration YAML */
         $standardGatewayCount = $this->analyzeYamlConfigurations($report, $projectPath);
 
-        /* Etape 3 : analyse des fichiers PHP pour les classes GatewayFactory */
-        $customGatewayCount = $this->analyzePhpUsages($report, $projectPath);
+        /* Etape 3 : analyse des fichiers PHP pour les classes GatewayFactory et les imports Payum */
+        $phpUsages = $this->analyzePhpUsages($report, $projectPath);
+        $customGatewayCount = $phpUsages['customGateways'];
+        $dependentFileCount = $phpUsages['dependentFiles'];
 
         /* Etape 4 : ajout d'un probleme global avec estimation */
         $totalMinutes = ($customGatewayCount * self::MINUTES_PER_CUSTOM_GATEWAY)
-            + ($standardGatewayCount * self::MINUTES_PER_STANDARD_GATEWAY);
+            + ($standardGatewayCount * self::MINUTES_PER_STANDARD_GATEWAY)
+            + ($dependentFileCount * self::MINUTES_PER_PAYUM_DEPENDENT_FILE);
 
         if ($totalMinutes > 0) {
             $report->addIssue(new MigrationIssue(
-                severity: Severity::BREAKING,
+                severity: Severity::SUGGESTION,
                 category: Category::DEPRECATION,
                 analyzer: $this->getName(),
                 message: sprintf(
-                    'Migration Payum requise : %d gateway(s) standard et %d gateway(s) personnalisee(s)',
+                    'Migration optionnelle vers les Payment Requests : %d gateway(s) standard, '
+                    . '%d gateway(s) personnalisee(s) et %d autre(s) fichier(s) PHP dependant de Payum',
                     $standardGatewayCount,
                     $customGatewayCount,
+                    $dependentFileCount,
                 ),
-                detail: 'Sylius 2.0 remplace Payum par un systeme de Payment Requests. '
-                    . 'Toutes les gateways de paiement doivent etre migrees vers le nouveau systeme.',
-                suggestion: 'Suivre le guide de migration Sylius pour convertir chaque gateway Payum '
-                    . 'en Payment Request handler.',
+                detail: 'Sylius 2.0 conserve Payum (SyliusPayumBundle) et ajoute les Payment Requests. '
+                    . 'Les gateways Payum continuent de fonctionner ; l\'estimation indique l\'effort '
+                    . 'si vous choisissez de les convertir, elle n\'entre pas dans le total.',
+                suggestion: 'Garder Payum pour la montee de version, puis convertir les gateways en '
+                    . 'Payment Request handlers si vous souhaitez adopter le nouveau systeme.',
                 docUrl: self::DOC_URL,
                 estimatedMinutes: $totalMinutes,
-            ));
-        }
-    }
-
-    /**
-     * Verifie la presence des paquets Payum dans composer.json.
-     */
-    private function analyzeComposerJson(MigrationReport $report, string $projectPath): void
-    {
-        $composerJsonPath = $projectPath . '/composer.json';
-        if (!file_exists($composerJsonPath)) {
-            return;
-        }
-
-        $composerData = json_decode((string) file_get_contents($composerJsonPath), true);
-        if (!is_array($composerData) || !isset($composerData['require'])) {
-            return;
-        }
-
-        foreach (self::PAYUM_PACKAGES as $package) {
-            if (!isset($composerData['require'][$package])) {
-                continue;
-            }
-
-            $version = $composerData['require'][$package];
-            $report->addIssue(new MigrationIssue(
-                severity: Severity::BREAKING,
-                category: Category::DEPRECATION,
-                analyzer: $this->getName(),
-                message: sprintf('Dependance %s detectee dans composer.json', $package),
-                detail: sprintf(
-                    'La version %s de %s est installee. '
-                    . 'Payum est remplace par le systeme de Payment Requests dans Sylius 2.0.',
-                    $version,
-                    $package,
-                ),
-                suggestion: sprintf(
-                    'Retirer %s de composer.json apres migration vers le systeme de Payment Requests.',
-                    $package,
-                ),
-                file: $composerJsonPath,
-                docUrl: self::DOC_URL,
             ));
         }
     }
@@ -166,7 +139,7 @@ final class PayumAnalyzer implements AnalyzerInterface
             }
 
             try {
-                $config = Yaml::parseFile($filePath);
+                $config = Yaml::parseFile($filePath, Yaml::PARSE_CUSTOM_TAGS);
             } catch (\Throwable) {
                 continue;
             }
@@ -185,18 +158,18 @@ final class PayumAnalyzer implements AnalyzerInterface
                 foreach ($payumConfig['gateways'] as $gatewayName => $gatewayConfig) {
                     $gatewayCount++;
                     $report->addIssue(new MigrationIssue(
-                        severity: Severity::BREAKING,
+                        severity: Severity::SUGGESTION,
                         category: Category::DEPRECATION,
                         analyzer: $this->getName(),
-                        message: sprintf('Gateway Payum "%s" a migrer', $gatewayName),
+                        message: sprintf('Gateway Payum "%s" convertible en Payment Request', $gatewayName),
                         detail: sprintf(
-                            'La gateway "%s" definie dans %s doit etre convertie '
-                            . 'en Payment Request handler compatible Sylius 2.0.',
+                            'La gateway "%s" definie dans %s reste supportee par SyliusPayumBundle '
+                            . 'et peut etre convertie en Payment Request handler.',
                             $gatewayName,
                             $file->getRelativePathname(),
                         ),
                         suggestion: sprintf(
-                            'Creer un Payment Request handler pour la gateway "%s" '
+                            'Optionnel : creer un Payment Request handler pour la gateway "%s" '
                             . 'en suivant la documentation Sylius.',
                             $gatewayName,
                         ),
@@ -211,14 +184,18 @@ final class PayumAnalyzer implements AnalyzerInterface
     }
 
     /**
-     * Analyse les fichiers PHP pour detecter les classes etendant GatewayFactory.
-     * Retourne le nombre de gateways personnalisees trouvees.
+     * Analyse les fichiers PHP pour detecter les classes etendant GatewayFactory et les imports Payum.
+     * Retourne le nombre de gateways personnalisees et le nombre d'autres fichiers important Payum.
+     * Un fichier contenant une gateway factory n'est compte qu'une fois, comme gateway personnalisee,
+     * car son estimation couvre deja ses imports.
+     *
+     * @return array{customGateways: int, dependentFiles: int}
      */
-    private function analyzePhpUsages(MigrationReport $report, string $projectPath): int
+    private function analyzePhpUsages(MigrationReport $report, string $projectPath): array
     {
         $srcDir = $projectPath . '/src';
         if (!is_dir($srcDir)) {
-            return 0;
+            return ['customGateways' => 0, 'dependentFiles' => 0];
         }
 
         $parser = (new ParserFactory())->createForNewestSupportedVersion();
@@ -226,6 +203,7 @@ final class PayumAnalyzer implements AnalyzerInterface
         $finder->files()->in($srcDir)->name('*.php');
 
         $customGatewayCount = 0;
+        $dependentFileCount = 0;
 
         foreach ($finder as $file) {
             $filePath = $file->getRealPath();
@@ -273,17 +251,31 @@ final class PayumAnalyzer implements AnalyzerInterface
                     /* Detection des imports de classes Payum */
                     if ($node instanceof Node\Stmt\Use_) {
                         foreach ($node->uses as $use) {
-                            $fullName = $use->name->toString();
-                            if (str_starts_with($fullName, 'Payum\\')) {
-                                $this->payumUsages[] = [
-                                    'class' => $fullName,
-                                    'line' => $node->getStartLine(),
-                                ];
-                            }
+                            $this->recordPayumImport($use->name->toString(), $node->getStartLine());
+                        }
+                    }
+
+                    /* Imports groupes (use Payum\Core\{...}) : le nom complet est prefixe + element */
+                    if ($node instanceof Node\Stmt\GroupUse) {
+                        foreach ($node->uses as $use) {
+                            $this->recordPayumImport(
+                                Node\Name::concat($node->prefix, $use->name)?->toString() ?? '',
+                                $use->getStartLine(),
+                            );
                         }
                     }
 
                     return null;
+                }
+
+                private function recordPayumImport(string $fullName, int $line): void
+                {
+                    if (str_starts_with($fullName, 'Payum\\')) {
+                        $this->payumUsages[] = [
+                            'class' => $fullName,
+                            'line' => $line,
+                        ];
+                    }
                 }
             };
 
@@ -295,7 +287,7 @@ final class PayumAnalyzer implements AnalyzerInterface
             foreach ($visitor->gatewayFactories as $factory) {
                 $customGatewayCount++;
                 $report->addIssue(new MigrationIssue(
-                    severity: Severity::BREAKING,
+                    severity: Severity::SUGGESTION,
                     category: Category::DEPRECATION,
                     analyzer: $this->getName(),
                     message: sprintf(
@@ -305,13 +297,13 @@ final class PayumAnalyzer implements AnalyzerInterface
                     ),
                     detail: sprintf(
                         'La classe %s dans %s etend %s. '
-                        . 'Les gateway factories Payum doivent etre entierement reecrites '
-                        . 'en Payment Request handlers.',
+                        . 'Elle reste utilisable avec SyliusPayumBundle ; adopter les Payment Requests '
+                        . 'demanderait de la reecrire en Payment Request handler.',
                         $factory['class'],
                         $file->getRelativePathname(),
                         $factory['parent'],
                     ),
-                    suggestion: 'Creer un nouveau Payment Request handler pour remplacer '
+                    suggestion: 'Optionnel : creer un Payment Request handler pour remplacer '
                         . 'cette gateway factory Payum personnalisee.',
                     file: $filePath,
                     line: $factory['line'],
@@ -319,21 +311,25 @@ final class PayumAnalyzer implements AnalyzerInterface
                 ));
             }
 
+            if ($visitor->gatewayFactories === [] && $visitor->payumUsages !== []) {
+                $dependentFileCount++;
+            }
+
             /* Problemes pour les usages generaux de Payum */
             foreach ($visitor->payumUsages as $usage) {
                 $report->addIssue(new MigrationIssue(
-                    severity: Severity::BREAKING,
+                    severity: Severity::SUGGESTION,
                     category: Category::DEPRECATION,
                     analyzer: $this->getName(),
                     message: sprintf('Utilisation de la classe Payum %s detectee', $usage['class']),
                     detail: sprintf(
                         'La classe %s est importee dans %s. '
-                        . 'Toutes les references a Payum doivent etre remplacees par '
-                        . 'le nouveau systeme de Payment Requests.',
+                        . 'Payum reste disponible dans Sylius 2.0 ; cette reference ne change que si '
+                        . 'vous adoptez le systeme de Payment Requests.',
                         $usage['class'],
                         $file->getRelativePathname(),
                     ),
-                    suggestion: 'Remplacer les references Payum par les interfaces et classes '
+                    suggestion: 'Optionnel : remplacer les references Payum par les interfaces et classes '
                         . 'du systeme de Payment Requests de Sylius 2.0.',
                     file: $filePath,
                     line: $usage['line'],
@@ -342,6 +338,6 @@ final class PayumAnalyzer implements AnalyzerInterface
             }
         }
 
-        return $customGatewayCount;
+        return ['customGateways' => $customGatewayCount, 'dependentFiles' => $dependentFileCount];
     }
 }

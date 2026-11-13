@@ -14,6 +14,7 @@ use PierreArthur\SyliusUpgradeAnalyzer\Model\MigrationIssue;
 use PierreArthur\SyliusUpgradeAnalyzer\Model\MigrationReport;
 use PierreArthur\SyliusUpgradeAnalyzer\Model\Severity;
 use PierreArthur\SyliusUpgradeAnalyzer\Report\ConsoleReporter;
+use PierreArthur\SyliusUpgradeAnalyzer\Report\PdfReporter;
 use PierreArthur\SyliusUpgradeAnalyzer\Report\ReporterInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -228,5 +229,58 @@ final class AnalyzeCommandTest extends TestCase
 
         /* Le chemin du projet doit apparaître dans la sortie */
         self::assertStringContainsString('project-moderate', $output);
+    }
+
+    /** Vérifie le refus d'un TJM non numérique avant l'analyse. */
+    #[Test]
+    public function testRejectsInvalidDailyRate(): void
+    {
+        $tester = new CommandTester($this->createCommand());
+
+        $exitCode = $tester->execute([
+            'project-path' => $this->getFixturePath('project-trivial'),
+            '--tjm' => '-200',
+        ]);
+
+        self::assertSame(Command::FAILURE, $exitCode);
+        self::assertStringContainsString('--tjm', $tester->getDisplay());
+    }
+
+    /** Vérifie la génération d'un rapport PDF local avec estimation budgétaire. */
+    #[Test]
+    public function testGeneratesPdfReport(): void
+    {
+        $outputFile = sys_get_temp_dir() . '/analyze-' . uniqid() . '.pdf';
+        $tester = new CommandTester($this->createCommand(
+            analyzers: [new TwigTemplateOverrideAnalyzer()],
+            reporters: [new ConsoleReporter(), new PdfReporter()],
+        ));
+
+        try {
+            $tester->execute([
+                'project-path' => $this->getFixturePath('project-moderate'),
+                '--format' => 'pdf',
+                '--output' => $outputFile,
+                '--tjm' => '600',
+            ]);
+
+            self::assertStringStartsWith('%PDF-', (string) file_get_contents($outputFile));
+        } finally {
+            @unlink($outputFile);
+        }
+    }
+
+    /** Verifie que --no-promo retire la mention d'accompagnement de la sortie console. */
+    #[Test]
+    public function testNoPromoOptionHidesServiceOffer(): void
+    {
+        $tester = new CommandTester($this->createCommand(analyzers: [new TwigTemplateOverrideAnalyzer()]));
+
+        $tester->execute([
+            'project-path' => $this->getFixturePath('project-moderate'),
+            '--no-promo' => true,
+        ]);
+
+        self::assertStringNotContainsString('creation-site-pro.fr', $tester->getDisplay());
     }
 }

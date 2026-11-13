@@ -1,18 +1,25 @@
 # Sylius Upgrade Analyzer
 
 [![Packagist Version](https://img.shields.io/packagist/v/pierre-arthur/sylius-upgrade-analyzer)](https://packagist.org/packages/pierre-arthur/sylius-upgrade-analyzer)
-[![PHP Version](https://img.shields.io/packagist/php-v/pierre-arthur/sylius-upgrade-analyzer)](https://packagist.org/packages/pierre-arthur/sylius-upgrade-analyzer)
-[![Symfony Version](https://img.shields.io/badge/symfony-6.4%20%7C%207.2-blue)](https://symfony.com)
+[![Analyzes Sylius](https://img.shields.io/badge/analyzes-Sylius%201.0%20%E2%86%92%201.14%20LTS-1a7f5a)](#compatibility)
+[![Any project PHP version](https://img.shields.io/badge/project%20PHP-any%20version%20(Docker)-blue)](#installation)
 [![CI](https://github.com/pierrearthurdemengel/sylius-upgrade-analyzer/actions/workflows/ci.yaml/badge.svg)](https://github.com/pierrearthurdemengel/sylius-upgrade-analyzer/actions/workflows/ci.yaml)
+[![Coverage](https://img.shields.io/badge/line%20coverage-%E2%89%A580%25%20enforced-1a7f5a)](#quality-and-safety)
 [![License](https://img.shields.io/packagist/l/pierre-arthur/sylius-upgrade-analyzer)](LICENSE)
 
 **Automated migration audit & auto-fix CLI for Sylius 1.x to 2.x projects.**
 
-Sylius Upgrade Analyzer scans your existing Sylius 1.x project, detects **every** breaking change, deprecated API, and incompatible pattern, then produces a detailed migration report with time estimates, fix suggestions, and **45 automatic corrections** covering the most common migration tasks.
+Sylius Upgrade Analyzer scans your existing Sylius 1.x project, detects **every** breaking change, deprecated API, and incompatible pattern, then produces a detailed migration report with time estimates, fix suggestions, and **37 automatic corrections** covering the most common migration tasks.
 
 Coverage is built from the official [UPGRADE-2.0.md](https://github.com/Sylius/Sylius/blob/2.0/UPGRADE-2.0.md), [UPGRADE-API-2.0.md](https://github.com/Sylius/Sylius/blob/2.1/UPGRADE-API-2.0.md), and [CHANGELOG-2.0.md](https://github.com/Sylius/Sylius/blob/2.1/CHANGELOG-2.0.md). Nothing is left unchecked.
 
-**Web service available at [sylius-upgrade-analyzer.dev](https://sylius-upgrade-analyzer.dev)** -- upload your `composer.json`, get a professional PDF report with time estimates and migration roadmap.
+## Compatibility
+
+**Supports every Sylius 1.x release, from 1.0 to 1.14 LTS (the final 1.x version).** There is no Sylius 1.15 or 1.16: 1.14 is the last release of the 1.x branch. The default migration target is Sylius 2.2.
+
+**Works whatever your project's PHP version.** The Docker image ships its own PHP, so a Sylius 1.x shop still running PHP 7.4 or Symfony 5.4 can be audited without installing anything in the project (see [Installation](#installation)).
+
+> **Sylius 1.14 LTS security support ends in December 2026.** Maintenance already ended in December 2025; after the end of support, 1.x shops no longer receive security fixes ([official release cycle](https://docs.sylius.com/public/open-source/release-cycle)). Auditing now is the first step to plan the move to Sylius 2.
 
 ---
 
@@ -31,68 +38,73 @@ Coverage is built from the official [UPGRADE-2.0.md](https://github.com/Sylius/S
 | 5 | Webpack Encore | `webpack.config.js` + `@symfony/webpack-encore` detection |
 | 6 | Use Webpack Config | Removed `use_webpack` from `sylius_ui` config |
 
-#### Deprecations & Breaking Changes (35)
+#### Deprecations & Breaking Changes (34)
 
 | # | Analyzer | What it detects |
 |---|----------|-----------------|
 | 7 | Winzou State Machine | winzou/state-machine-bundle to Symfony Workflow |
 | 8 | SwiftMailer | swiftmailer/swiftmailer to symfony/mailer |
 | 9 | User Encoder | `security.encoders` and `getSalt()` methods |
-| 10 | Payum | Payum gateway to Payment Requests |
+| 10 | Payum | Payum gateways convertible to Payment Requests (optional: Payum is still supported, not counted in the effort) |
 | 11 | Message Bus Rename | `sylius_default.bus` / `sylius_event.bus` renames |
-| 12 | Command Handler Rename | `src/Message/` to `src/Command/` |
+| 12 | Command Handler Rename | References to Sylius `Message*` namespaces renamed `Command*` |
 | 13 | Deprecated Email Manager | Removed OrderEmailManager / ContactEmailManager |
 | 14 | Removed Payment Gateway | Stripe / PayPal Express removed from core |
 | 15 | Service Decorator | Decorators targeting renamed Sylius services |
-| 16 | Order Processor Priority | Priority conflicts (40-60 range) |
-| 17 | Form Type Extension Priority | Missing explicit priorities |
-| 18 | Behat Context Deprecation | 10+ deprecated Behat contexts |
-| 19 | Admin Menu Event | Event-based admin menu system changes |
-| 20 | Translation Key | Renamed `sylius.ui.*` / `sylius.form.*` / `sylius.email.*` keys |
-| 21 | Promotion Rule Checker | PromotionRuleCheckerInterface changes |
-| 22 | Shipping Calculator | CalculatorInterface changes |
-| 23 | Doctrine XML Mapping | `*.orm.xml` to PHP attribute migration |
-| 24 | Custom Fixture | Fixture system changes |
-| 25 | Multi-Store Channel | `findOneByHostname` deprecation, locale contexts |
-| 26 | Bundle Configuration | 7 removed bundles + 6 required new bundles in `bundles.php` |
-| 27 | Calendar to Clock | `sylius/calendar` to `symfony/clock` (`ClockInterface`) |
-| 28 | Security Firewall | `new_api_admin_user` / `new_api_shop_user` firewall renames |
-| 29 | User Model Field | Removed `locked`, `expiresAt`, `credentialsExpireAt`, `\Serializable` |
-| 30 | Removed Class | 150+ removed classes (Templating Helpers, UiBundle, DataCollectors, etc.) |
-| 31 | Renamed Service ID | 21 renamed/removed Sylius service IDs |
-| 32 | Removed Route | 43 removed admin/shop routes (partials, AJAX, etc.) |
-| 33 | LiipImagine Config | Resolver/loader `"default"` to `"sylius_image"` |
-| 34 | Constructor Signature | 24 classes with changed constructor signatures |
-| 35 | PHP Node Version | PHP 8.2+, Node.js 20+, Symfony 5.4 detection |
-| 36 | Class Move | 14 classes moved between bundles |
-| 37 | Service Visibility | Direct `$container->get('sylius.*')` calls (now private) |
-| 38 | Payment Request Env | Missing Messenger transport env vars for payments |
-| 39 | Deprecated Bundle Package | 7 removed packages (FOSRest, JMSSerializer, BazingaHateoas, etc.) |
-| 40 | Removed Config Key | Removed YAML config keys (`sylius_core.*`, `sylius_api.*`, MongoDB/PHPCR ODM) |
-| 41 | Routing Import | Legacy routing imports (Payum shop routes, API route parameter renames) |
+| 16 | Order Processor Autoconfiguration | Order processors and cart contexts no longer registered through their interface |
+| 17 | Removed Form Type Extension | Classes and services built on form extensions removed from Sylius core |
+| 18 | Behat Context Deprecation | Removed `sylius.behat.api_security` service |
+| 19 | Admin Menu Event | Listeners on the five admin menus removed in 2.0 |
+| 20 | Promotion Rule Checker | PromotionRuleCheckerInterface changes |
+| 21 | Shipping Calculator | References to the renamed core shipping calculator services |
+| 22 | Doctrine XML Mapping | `*.orm.xml` to PHP attribute migration |
+| 23 | Custom Fixture | Fixture system changes |
+| 24 | Multi-Store Channel | Removed `findOneByHostname()`, custom channel and locale contexts |
+| 25 | Bundle Configuration | 7 removed bundles + 6 required new bundles in `bundles.php` |
+| 26 | Calendar to Clock | `sylius/calendar` to `symfony/clock` (`ClockInterface`) |
+| 27 | Security Firewall | `new_api_admin_user` / `new_api_shop_user` firewall renames |
+| 28 | User Model Field | Removed `locked`, `expiresAt`, `credentialsExpireAt`, `\Serializable` |
+| 29 | Removed Class | 150+ removed classes (Templating Helpers, UiBundle, DataCollectors, etc.) |
+| 30 | Renamed Service ID | 21 renamed/removed Sylius service IDs |
+| 31 | Removed Route | 43 removed admin/shop routes (partials, AJAX, etc.) |
+| 32 | LiipImagine Config | Resolver/loader `"default"` to `"sylius_image"` |
+| 33 | Constructor Signature | 24 classes with changed constructor signatures |
+| 34 | PHP Node Version | PHP 8.2+, Node.js 20+, Symfony 5.4 detection |
+| 35 | Class Move | 14 classes moved between bundles |
+| 36 | Service Visibility | Direct `$container->get('sylius.*')` calls (now private) |
+| 37 | Payment Request Env | Missing Messenger transport env vars for payments |
+| 38 | Deprecated Bundle Package | 7 removed packages (FOSRest, JMSSerializer, BazingaHateoas, etc.) |
+| 39 | Removed Config Key | Removed YAML config keys (`sylius_core.*`, `sylius_api.*`, MongoDB/PHPCR ODM) |
+| 40 | Routing Import | Legacy routing imports (Payum shop routes, API route parameter renames) |
 
 #### Plugins (1)
 
 | # | Analyzer | What it detects |
 |---|----------|-----------------|
-| 42 | Plugin Compatibility | Sylius plugins cross-referenced with Addons Marketplace + Packagist |
+| 41 | Plugin Compatibility | Sylius plugins cross-referenced with Addons Marketplace + Packagist |
 
 #### Grid & Resource (3)
 
 | # | Analyzer | What it detects |
 |---|----------|-----------------|
-| 43 | Grid Customization | Custom grid YAML + PHP grid classes + custom columns/filters |
-| 44 | Resource Bundle | SyliusResourceBundle config, custom factories/repositories |
-| 45 | Grid Filter Entity | `type: entities` to `type: entity`, `field:` to `fields:` syntax |
+| 42 | Grid Customization | Custom grid YAML + PHP grid classes + custom columns/filters |
+| 43 | Resource Bundle | SyliusResourceBundle config, custom factories/repositories |
+| 44 | Grid Filter Entity | `type: entities` to `type: entity`, `field:` to `fields:` syntax |
 
 #### API Platform (4)
 
 | # | Analyzer | What it detects |
 |---|----------|-----------------|
-| 46 | API Platform Migration | @ApiResource, DataProvider/DataPersister, ApiPlatform\Core namespace |
-| 47 | API Serialization Group | Missing `sylius:` prefix on serialization groups |
-| 48 | API Endpoint Restructure | 8+ restructured/removed API endpoint paths |
-| 49 | API Query Extension Signature | `$operationName` to `Operation $operation` parameter change |
+| 45 | API Platform Migration | @ApiResource, DataProvider/DataPersister, ApiPlatform\Core namespace |
+| 46 | API Serialization Group | Missing `sylius:` prefix on serialization groups |
+| 47 | API Endpoint Restructure | 8+ restructured/removed API endpoint paths |
+| 48 | API Query Extension Signature | `$operationName` to `Operation $operation` parameter change |
+
+#### Security (1)
+
+| # | Analyzer | What it detects |
+|---|----------|-----------------|
+| 49 | PHP Security Patch | PHP versions declared by the project (Dockerfile, compose, `config.platform.php`, `.php-version`, `.tool-versions`) that miss a security release, e.g. the October 2026 remote code execution fixes (CVE-2026-109618, CVE-2026-109619) |
 
 ### 6 Output Reporters
 
@@ -101,55 +113,51 @@ Coverage is built from the official [UPGRADE-2.0.md](https://github.com/Sylius/S
 - **CSV** -- Excel-compatible export (UTF-8 BOM, semicolon separator) via `--format=csv`
 - **SARIF** -- Static Analysis Results Interchange Format (GitHub Code Scanning compatible)
 - **Markdown** -- Human-readable report with tables, suitable for PRs and wikis
-- **PDF** -- Professional report for stakeholders (via [sylius-upgrade-analyzer.dev](https://sylius-upgrade-analyzer.dev))
+- **PDF** -- Stakeholder report generated locally: executive summary, risk factors, roadmap, budget estimate (`--tjm`) and detailed issues (requires `dompdf/dompdf`)
 
-### 45 Auto-Fixers
+### 37 Auto-Fixers
 
 | Fixer | Confidence | What it fixes |
-|-------|:----------:|---------------|
-| Twig Hook Fixer | HIGH | Generates `sylius_twig_hooks` YAML config for template overrides |
-| Workflow Migration Fixer | MEDIUM | Converts winzou state machine YAML to Symfony Workflow config |
-| Security Config Fixer | HIGH | Replaces `security.encoders` with `security.password_hashers` and simplifies `getSalt()` |
+|-------|------------|---------------|
+| API Endpoint Restructure Fixer | HIGH | Replaces 3 API endpoint paths renamed in `UPGRADE-API-2.0.md` |
+| Bundle Configuration Fixer | HIGH | Removes bundles dropped by Sylius 2.0 and adds the new ones in `bundles.php` |
+| Calendar to Clock Fixer | HIGH | `DateTimeProviderInterface` → `ClockInterface`, `sylius/calendar` → `symfony/clock` |
+| Class Move Fixer | HIGH | Updates FQCN references of classes moved between Sylius bundles |
+| Command Handler Rename Fixer | HIGH | Sylius `Message*` namespaces → `Command*` (your own code is not renamed) |
+| Deprecated Bundle Package Fixer | HIGH | Removes deprecated packages from `composer.json`, keeping the JSON valid |
+| Grid Filter Entity Fixer | HIGH | `type: entities` → `type: entity` in grid YAML |
+| LiipImagine Config Fixer | HIGH | Resolver/loader `default` → `sylius_image` |
 | Message Bus Fixer | HIGH | Renames bus references in YAML and PHP files |
-| Command Handler Fixer | HIGH | Updates namespaces from `Message\` to `Command\` |
-| SwiftMailer Fixer | HIGH | Converts `Swift_Message` to `Email`, `Swift_Attachment` to `DataPart`, updates YAML config |
-| Renamed Service ID Fixer | HIGH | Replaces 11 old Sylius service IDs + 2 prefix renames in YAML |
+| Multi-Store Channel Fixer | HIGH | `findOneByHostname()` → `findOneEnabledByHostname()` |
+| Order Processor Autoconfiguration Fixer | HIGH | Adds `#[AsOrderProcessor]` / `#[AsCartContext]` (priority 0, as in 1.x) |
+| Payment Request Env Fixer | HIGH | Adds the 2 Messenger transport variables of `UPGRADE-2.0.md` to `.env` |
+| Removed Config Key Fixer | HIGH | Comments out removed YAML config keys with TODO markers |
+| Renamed Service ID Fixer | HIGH | Renames service IDs listed word for word in the `UPGRADE-2.0.md` tables |
+| Routing Import Fixer | HIGH | Replaces old routing imports and renamed `new_api_*` parameters |
+| Security Config Fixer | HIGH | Generates the `security.password_hashers` configuration |
 | Security Firewall Fixer | HIGH | Renames `new_api_admin_user` → `api_admin`, `new_api_shop_user` → `api_shop` |
-| LiipImagine Config Fixer | HIGH | Replaces resolver/loader `"default"` with `"sylius_image"` |
-| Sonata Block Event Fixer | MEDIUM | Replaces `sonata_block_render_event()` / `sylius_template_event()` with `hook()` |
-| Grid Filter Entity Fixer | HIGH | Replaces `type: entities` with `type: entity` in grid YAML |
+| Shipping Calculator Fixer | HIGH | Renames references to `sylius.shipping_calculator*` services (the tag is unchanged) |
 | Use Webpack Config Fixer | HIGH | Removes `use_webpack` from `sylius_ui` YAML config and Twig conditionals |
-| Calendar to Clock Fixer | HIGH | Replaces `DateTimeProviderInterface` → `ClockInterface`, `sylius/calendar` → `symfony/clock` |
-| Class Move Fixer | HIGH | Updates 9 moved FQCN references between Sylius bundles |
-| Removed Class Fixer | MEDIUM | Comments out `use` statements for 150+ removed classes with TODO markers |
-| Bundle Config Fixer | HIGH | Removes 7 deprecated bundles and adds 5 required new bundles in `bundles.php` |
-| Deprecated Bundle Package Fixer | HIGH | Removes 6 deprecated packages from `composer.json` |
-| User Encoder Fixer | HIGH | YAML: `encoders` → `password_hashers` + algorithm; PHP: `getSalt()` → `return null` |
-| API Endpoint Restructure Fixer | HIGH | Replaces 3 restructured API endpoint paths |
-| Removed Route Fixer | MEDIUM | Comments removed route references in PHP and Twig with TODO markers |
-| Payment Request Env Fixer | HIGH | Adds 2 required Messenger transport env vars to `.env` |
-| Routing Import Fixer | HIGH | Replaces 7 old routing imports and parameter names |
-| Removed Config Key Fixer | HIGH | Comments 7 removed YAML config keys with TODO markers |
-| Translation Key Fixer | MEDIUM | Replaces 5 renamed translation key prefixes (`sylius.ui.admin` → `sylius.admin`, etc.) |
-| Behat Context Fixer | MEDIUM | Renames deprecated Behat context classes |
-| API Serialization Group Fixer | MEDIUM | Adds `sylius:` prefix to 4 serialization group pairs |
-| API Query Extension Signature Fixer | MEDIUM | Updates `$operationName` → `Operation $operation` parameter + use statement |
-| Form Type Extension Priority Fixer | MEDIUM | Adds `getPriority()` method when `getExtendedTypes()` exists |
-| Order Processor Priority Fixer | MEDIUM | Adds `priority` in YAML tags + `getPriority()` in PHP |
-| Deprecated Email Manager Fixer | MEDIUM | Replaces 4 deprecated email manager interface FQCNs |
-| Admin Menu Event Fixer | MEDIUM | Replaces 3 old admin menu event names |
-| Service Decorator Fixer | MEDIUM | Updates `decorates:` with renamed controller service prefixes |
-| Removed Payment Gateway Fixer | MEDIUM | Comments `stripe_checkout` and `paypal_express_checkout` configs |
-| Shipping Calculator Fixer | MEDIUM | Replaces `DelegatingCalculatorInterface` → `CalculatorInterface` |
+| User Encoder Fixer | HIGH / MEDIUM | YAML: `encoders` → `password_hashers` (high); PHP: `getSalt()` (medium) |
+| API Platform Migration Fixer | MEDIUM | `ApiPlatform\Core` → API Platform 3 namespaces |
+| API Query Extension Signature Fixer | MEDIUM | `string $operationName` → `?Operation $operation = null` + use statement |
+| API Serialization Group Fixer | MEDIUM | Adds the `sylius:` prefix to `admin:` and `shop:` serialization groups |
+| Constructor Signature Fixer | MEDIUM | Adds TODO markers on overridden constructors of changed Sylius classes |
+| Deprecated Email Manager Fixer | MEDIUM | Replaces email manager FQCNs moved to CoreBundle |
 | Promotion Rule Checker Fixer | MEDIUM | Moves `CartQuantityRuleChecker` from Promotion to Core namespace |
-| Payum Config Fixer | MEDIUM | Comments `payum:` YAML root key and Payum `use` statements in PHP |
-| Grid Customization Fixer | MEDIUM | Replaces `field:` → `fields:` + `doctrine/orm` → `doctrine_orm` |
-| Resource Bundle Fixer | MEDIUM | Replaces `doctrine/orm` driver format, comments PHPCR/MongoDB drivers |
-| API Platform Migration Fixer | MEDIUM | Updates 7 namespace replacements (Core → Metadata/Symfony) + annotation → attribute |
-| Multi-Store Channel Fixer | HIGH | Replaces `findOneByHostname()` with `findOneEnabledByHostname()` |
-| Constructor Signature Fixer | MEDIUM | Adds TODO markers on overridden constructors of 24 changed Sylius classes |
+| Removed Class Fixer | MEDIUM | Comments out `use` statements of removed classes with TODO markers |
+| Removed Payment Gateway Fixer | MEDIUM | Comments out the whole `stripe_checkout` / `paypal_express_checkout` YAML definition |
+| Removed Route Fixer | MEDIUM | Comments removed route references with TODO markers |
+| Resource Bundle Fixer | MEDIUM | Comments out PHPCR/MongoDB drivers (`doctrine/orm` is untouched) |
+| Service Decorator Fixer | MEDIUM | Renames `decorates:` targets listed in the `UPGRADE-2.0.md` tables |
+| Sonata Block Event Fixer | MEDIUM | `sonata_block_render_event()` / `sylius_template_event()` → `hook()` |
+| SwiftMailer Fixer | MEDIUM / LOW | YAML: `framework.mailer.dsn` (medium); PHP: class names only, calls to rewrite (low) |
+| Twig Hook Fixer | MEDIUM | Registers a Twig Hook for a template override (the hook template is yours to create) |
 | User Model Field Fixer | MEDIUM | Comments deprecated `locked`, `expiresAt`, `credentialsExpireAt` fields and `Serializable` |
+| Workflow Migration Fixer | MEDIUM | Converts winzou state machine YAML to Symfony Workflow config |
 | Doctrine XML Mapping Fixer | LOW | Adds TODO marker for `*.orm.xml` to PHP attribute conversion |
+
+Every fixer's real before/after output is in [docs/fixer-examples.md](docs/fixer-examples.md) (replayed by the test suite), and [docs/fixers.md](docs/fixers.md) explains each confidence level.
 
 ### GitHub Action
 
@@ -161,19 +169,65 @@ Run the analyzer in your CI pipeline, post PR comments, and upload SARIF to GitH
 - **Baseline management** -- save and diff results across runs
 - **Sprint planner** -- generate a migration roadmap with sprint breakdown
 - **Plugin compatibility** -- checks Sylius Addons Marketplace and Packagist
-- **Multi-project analysis** -- consolidated PDF for agencies managing multiple Sylius projects
+- **Multi-project analysis** -- consolidated comparison table and budget for agencies managing several Sylius projects (console, JSON, Markdown or PDF)
 - **Report comparison** -- diff two reports to track migration progress
-- **Webhook notifications** -- get notified when a new report is generated
+- **Plugin compatibility matrix** -- check a list of plugins against the target version
 
 ---
 
 ## Installation
 
+Pick the mode that fits your project. The first three never touch your project's `composer.json`.
+
+### Docker (recommended for Sylius 1.x projects)
+
+Works whatever your project's PHP version, all formats included (PDF too):
+
+```bash
+docker run --rm -v "$PWD:/project" ghcr.io/pierrearthurdemengel/sylius-upgrade-analyzer
+
+# Any command and option, reports written next to your code
+docker run --rm -v "$PWD:/project" --user "$(id -u):$(id -g)" ghcr.io/pierrearthurdemengel/sylius-upgrade-analyzer \
+  sylius-upgrade:analyze /project --format=pdf --output=/project/report.pdf --tjm=600
+```
+
+### Standalone PHAR
+
+A single file, no dependency to install. Needs PHP 8.2+ on the machine running it, not in the audited project. PDF output is not available from the PHAR (use Docker for PDF).
+
+```bash
+curl -LO https://github.com/pierrearthurdemengel/sylius-upgrade-analyzer/releases/latest/download/sylius-upgrade-analyzer.phar
+php sylius-upgrade-analyzer.phar sylius-upgrade:analyze /path/to/project
+```
+
+### Global Composer install
+
+```bash
+composer global require pierre-arthur/sylius-upgrade-analyzer
+sylius-upgrade-analyzer sylius-upgrade:analyze /path/to/project
+```
+
+### Inside the project
+
+Only when the project already runs PHP 8.2+ with Symfony 6.4 or 7.x:
+
 ```bash
 composer require --dev pierre-arthur/sylius-upgrade-analyzer
 ```
 
-Requirements: PHP 8.2+, Symfony 6.4 or 7.2.
+---
+
+## Professional Migration Services
+
+Sylius Upgrade Analyzer is developed by **Pierre-Arthur Demengel**, freelance developer specialised in Sylius 1.x to 2.x migrations.
+
+The report tells you *what* has to change and *how long* it should take. If you would rather not carry the migration alone:
+
+- **Audit** -- review of your report with your team, risks and priorities
+- **Fixed-price migration** -- the upgrade carried out end to end, from dependencies to production
+- **Team support** -- guidance on Twig Hooks, Symfony Workflow, Payment Requests and plugin replacements
+
+**[Get a free migration diagnosis](https://creation-site-pro.fr/en/sylius-2-upgrade?utm_source=analyzer-readme)**
 
 ---
 
@@ -207,12 +261,20 @@ vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --format=sarif --outpu
 # Markdown report
 vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --format=markdown --output=report.md
 
-# PDF report
-vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --pdf
-
 # CSV export (Excel-compatible)
 vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --format=csv --output=report.csv
+
+# PDF report, with a budget estimate based on a 600 EUR daily rate
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --format=pdf --output=report.pdf --tjm=600
 ```
+
+PDF generation is fully local and relies on [dompdf](https://github.com/dompdf/dompdf), an optional dependency kept out of the default install to avoid version conflicts with your project:
+
+```bash
+composer require --dev dompdf/dompdf
+```
+
+The budget estimate converts the estimated hours into days on a 7-hour basis, rounded up to the next half day.
 
 ### Project Naming
 
@@ -248,6 +310,14 @@ vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze -vv
 vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --no-marketplace
 ```
 
+### Hiding the Migration Services Mention
+
+Console, Markdown and PDF reports end with a one-line mention of the migration services above. JSON, SARIF and CSV outputs never contain it. To remove it:
+
+```bash
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --no-promo
+```
+
 ### Custom Rules
 
 ```bash
@@ -272,55 +342,32 @@ vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --diff
 vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --sprint-plan --velocity=40
 ```
 
-### Upload Report for PDF Generation
+### Multi-Project Analysis
+
+Audit a whole portfolio of Sylius shops in one run and get a comparison table (complexity, risk, blocking issues, hours, budget) with totals:
 
 ```bash
-# Generate JSON first, then upload for PDF generation
-vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --format=json --output=report.json
-vendor/bin/sylius-upgrade-analyzer sylius-upgrade:upload report.json --api-key=sua_xxx --output=report.pdf
-```
-
-> **Tip:** You can also upload directly on [sylius-upgrade-analyzer.dev](https://sylius-upgrade-analyzer.dev) without an API key for a one-time report.
-
-### Multi-Project Analysis (Agency)
-
-```bash
-# Analyze multiple projects and generate a consolidated PDF
+# Comparison table in the terminal
 vendor/bin/sylius-upgrade-analyzer sylius-upgrade:multi-analyze \
-  /path/to/project1 /path/to/project2 /path/to/project3 \
-  --api-key=sua_agy_xxx --output=consolidated-report.pdf --tjm=600
+  /path/to/project1 /path/to/project2 /path/to/project3 --tjm=600
+
+# Consolidated PDF (one overview page, then one summary page per project)
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:multi-analyze \
+  /path/to/project1 /path/to/project2 --format=pdf --output=portfolio.pdf --tjm=600
+
+# Also available: --format=json and --format=markdown
 ```
+
+Projects sharing the same Composer name (forks, per-country variants) are told apart by their directory name.
 
 ### Compare Reports
 
 ```bash
-# Compare two local JSON reports
+# Compare two JSON reports (e.g. before and after a migration sprint)
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --format=json --output=before.json
+# ... fix some issues ...
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:analyze --format=json --output=after.json
 vendor/bin/sylius-upgrade-analyzer sylius-upgrade:compare before.json after.json
-
-# Compare two reports via API (by report ID)
-vendor/bin/sylius-upgrade-analyzer sylius-upgrade:compare \
-  --before-id=uuid1 --after-id=uuid2 --api-key=sua_agy_xxx
-```
-
-### Report History (Agency)
-
-```bash
-# View past reports
-vendor/bin/sylius-upgrade-analyzer sylius-upgrade:history --api-key=sua_agy_xxx --limit=10
-```
-
-### Webhook Management (Agency)
-
-```bash
-# View current webhook config
-vendor/bin/sylius-upgrade-analyzer sylius-upgrade:webhook get --api-key=sua_agy_xxx
-
-# Set a webhook
-vendor/bin/sylius-upgrade-analyzer sylius-upgrade:webhook set \
-  --url=https://hooks.example.com/migration --secret=mysecret --api-key=sua_agy_xxx
-
-# Delete webhook
-vendor/bin/sylius-upgrade-analyzer sylius-upgrade:webhook delete --api-key=sua_agy_xxx
 ```
 
 ---
@@ -345,6 +392,13 @@ Each fix has a confidence level:
 
 In `--dry-run` mode, the tool generates a unified diff patch showing what would change without writing any files.
 
+#### What auto-fixes can and cannot do
+
+- **Nothing is written without your consent in a terminal**: `--fix` lists every change and asks for confirmation. In CI (non-interactive), `--fix` applies directly, as scripts expect. Run `--dry-run` first to review the patch.
+- **Files only**: no fixer connects to a database, runs a migration or executes a command. Every write goes through a single place (`FixEngine::applyFix()`), so every change is visible in your Git diff.
+- **Payment configuration is handled conservatively**: no fixer edits PHP payment code. One `MEDIUM` fixer comments out (never deletes) the removed Stripe Checkout and PayPal Express gateway YAML, and one adds the missing Payment Request environment variables to `.env`. Payum itself is left alone: Sylius 2.0 still supports it.
+- Run it on a clean Git working tree so that `git diff` and `git checkout .` remain your safety net.
+
 ---
 
 ## GitHub Action
@@ -355,13 +409,18 @@ Add the analyzer to your CI workflow:
 name: Sylius Migration Audit
 on: [push, pull_request]
 
+permissions:
+  contents: read
+  security-events: write   # required by upload-sarif
+  pull-requests: write     # required by post-pr-comment
+
 jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pierrearthurdemengel/sylius-upgrade-analyzer@v1
+      - uses: pierrearthurdemengel/sylius-upgrade-analyzer@v2.2.0
         with:
           project-path: '.'
           target-version: '2.2'
@@ -376,9 +435,12 @@ jobs:
 |-------|---------|-------------|
 | `project-path` | `.` | Path to the Sylius project |
 | `target-version` | `2.2` | Target Sylius version |
+| `analyzer-version` | `^2.2` | Composer constraint of the analyzer version to install |
 | `fail-on-breaking` | `true` | Fail the job if breaking issues are found |
 | `upload-sarif` | `false` | Upload SARIF report to GitHub Code Scanning |
-| `post-pr-comment` | `false` | Post a summary comment on the PR |
+| `post-pr-comment` | `false` | Post a summary comment on the PR (lists up to 50 breaking issues; skipped with a warning on read-only fork tokens) |
+
+The analyzer is installed in the runner's temporary directory, so your project's `composer.json` and dependencies are left untouched.
 
 ### Action Outputs
 
@@ -497,11 +559,42 @@ See [docs/custom-rules.md](docs/custom-rules.md) for the full reference.
 
 ## Compatibility Matrix
 
-Check the compatibility matrix for Sylius plugins:
+Check the compatibility of Sylius plugins with the target version (Addons Marketplace + Packagist):
 
 ```bash
-vendor/bin/sylius-upgrade-analyzer sylius-upgrade:compatibility-matrix
+# Read the plugins from the composer.json of the current directory
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:matrix
+
+# Check an explicit list, output as Markdown
+vendor/bin/sylius-upgrade-analyzer sylius-upgrade:matrix \
+  bitbag/wishlist-plugin,sylius/invoicing-plugin --format=markdown
 ```
+
+---
+
+## Results on Public Projects
+
+The analyzer is run on public Sylius 1.x code bases to check its findings against reality (details and commands in [docs/benchmarks.md](docs/benchmarks.md)):
+
+| Project | Sylius | Issues | Blocking | Estimated effort |
+|---------|--------|--------|----------|------------------|
+| [Sylius-Standard](https://github.com/Sylius/Sylius-Standard) (1.14 branch, official skeleton) | ~1.14.0 | 66 | 27 | 52.0 h |
+| [Sylius/InvoicingPlugin](https://github.com/Sylius/InvoicingPlugin) (1.0 branch) | ~1.13.0 \|\| ~1.14.0 | 30 | 6 | 38.5 h |
+| [BitBag SyliusWishlistPlugin](https://github.com/BitBagCommerce/SyliusWishlistPlugin) | ^1.13 \|\| ^1.14 | 13 | 2 | 15.5 h |
+
+Every blocking issue on these projects was reviewed by hand. Running these benchmarks already caught and fixed false positives (removed configuration keys, development tools reported as incompatible plugins).
+
+---
+
+## Quality and Safety
+
+- **Tests**: 940+ PHPUnit tests, including one replayed before/after example per auto-fixer, line coverage of at least 80 % enforced in CI (the build fails below), PHPStan level 8, PHP CS Fixer.
+- **CI matrix**: PHP 8.2, 8.3 and 8.4, against Symfony 6.4 and 7.4, dependencies installed from `composer.lock`, `composer audit` in every job.
+- **Every detection is sourced**: checks are traced back to the official Sylius upgrade guides; checks that could not be traced back to a documented change have been removed (see [CHANGELOG.md](CHANGELOG.md)).
+- **Semantic versioning** and a maintained [CHANGELOG.md](CHANGELOG.md). Security issues: see [SECURITY.md](SECURITY.md).
+- **Privacy**: the analysis runs entirely on your machine; your code is never uploaded. The only network calls are optional plugin compatibility checks against the Sylius Addons Marketplace and Packagist (`--no-marketplace` disables them).
+
+If the tool saved you time, a star on GitHub or a review on the [Sylius Addons Marketplace](https://addons.sylius.com/en_US/products/sylius-upgrade-analyzer) helps other teams find it.
 
 ---
 
@@ -526,18 +619,6 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for gu
 
 ---
 
-## Pricing
-
-The CLI tool is **free and open-source** (MIT License). Advanced features are available via [sylius-upgrade-analyzer.dev](https://sylius-upgrade-analyzer.dev):
-
-| Plan | Price | Includes |
-|------|-------|----------|
-| **Report** | 59 EUR (one-time) | 1 professional PDF report with migration roadmap |
-| **Studio** | 299 EUR/year | Unlimited reports + white-label PDFs (agency logo, colors) |
-| **Agency** | 799 EUR/year | Studio features + 4 seat keys + multi-project consolidated reports |
-
----
-
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
@@ -546,7 +627,8 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Author
 
-**Pierre-Arthur Demengel** -- [pierrearthur.demengel@gmail.com](mailto:pierrearthur.demengel@gmail.com)
+**Pierre-Arthur Demengel** -- freelance developer specialised in Sylius 1.x to 2.x migrations -- [pierrearthur.demengel@gmail.com](mailto:pierrearthur.demengel@gmail.com)
+
+- Website: [creation-site-pro.fr](https://creation-site-pro.fr/en/sylius-2-upgrade?utm_source=analyzer-readme-author)
 
 - GitHub: [github.com/pierrearthurdemengel/sylius-upgrade-analyzer](https://github.com/pierrearthurdemengel/sylius-upgrade-analyzer)
-- Website: [sylius-upgrade-analyzer.dev](https://sylius-upgrade-analyzer.dev)

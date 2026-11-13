@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace PierreArthur\SyliusUpgradeAnalyzer\Command;
 
 use PierreArthur\SyliusUpgradeAnalyzer\Analyzer\AnalyzerInterface;
+use PierreArthur\SyliusUpgradeAnalyzer\Analyzer\SyliusVersionDetector;
+use PierreArthur\SyliusUpgradeAnalyzer\AutoFix\FixConfidence;
 use PierreArthur\SyliusUpgradeAnalyzer\AutoFix\FixEngine;
+use PierreArthur\SyliusUpgradeAnalyzer\AutoFix\MigrationFix;
+use PierreArthur\SyliusUpgradeAnalyzer\Exception\PdfGenerationException;
 use PierreArthur\SyliusUpgradeAnalyzer\Exception\ProjectNotFoundException;
 use PierreArthur\SyliusUpgradeAnalyzer\Model\MigrationReport;
 use PierreArthur\SyliusUpgradeAnalyzer\Model\Severity;
+use PierreArthur\SyliusUpgradeAnalyzer\Report\MigrationServiceOffer;
 use PierreArthur\SyliusUpgradeAnalyzer\Report\ReporterInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -71,7 +76,7 @@ final class AnalyzeCommand extends Command
                 'format',
                 'f',
                 InputOption::VALUE_REQUIRED,
-                'Format de sortie du rapport (console, json)',
+                'Format de sortie du rapport (console, json, sarif, markdown, csv, pdf)',
                 'console',
             )
             ->addOption(
@@ -100,18 +105,6 @@ final class AnalyzeCommand extends Command
                 'Désactiver la vérification de compatibilité via le marketplace',
             )
             ->addOption(
-                'pdf',
-                null,
-                InputOption::VALUE_NONE,
-                'Générer un rapport au format PDF',
-            )
-            ->addOption(
-                'api-key',
-                null,
-                InputOption::VALUE_REQUIRED,
-                'Clé API pour les services externes',
-            )
-            ->addOption(
                 'fix',
                 null,
                 InputOption::VALUE_NONE,
@@ -122,6 +115,13 @@ final class AnalyzeCommand extends Command
                 null,
                 InputOption::VALUE_NONE,
                 'Simuler les corrections sans modifier les fichiers',
+            )
+            ->addOption(
+                'min-confidence',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Niveau de confiance minimal des correctifs proposés : high, medium ou low',
+                'low',
             )
             ->addOption(
                 'save-baseline',
@@ -159,6 +159,18 @@ final class AnalyzeCommand extends Command
                 InputOption::VALUE_REQUIRED,
                 'Nom du projet (déduit du composer.json ou du répertoire si non fourni)',
             )
+            ->addOption(
+                'tjm',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Taux journalier moyen en euros : ajoute une estimation budgétaire au rapport PDF',
+            )
+            ->addOption(
+                'no-promo',
+                null,
+                InputOption::VALUE_NONE,
+                'Ne pas afficher la mention d\'accompagnement a la migration en fin de rapport',
+            )
         ;
     }
 
@@ -171,8 +183,23 @@ final class AnalyzeCommand extends Command
         $targetVersion = $input->getOption('target-version');
         $format = $input->getOption('format');
 
-        /* Détection de la version de Sylius depuis composer.lock */
-        $syliusVersion = $this->detectSyliusVersion($projectPath);
+        $dailyRate = $this->parseDailyRate($input->getOption('tjm'));
+        if ($dailyRate === false) {
+            $io->error('L\'option --tjm attend un nombre entier strictement positif (ex : --tjm=600).');
+
+            return Command::FAILURE;
+        }
+
+        /* Validé avant l'analyse : une faute de frappe ne doit pas faire appliquer plus de correctifs que prévu */
+        $minConfidence = FixConfidence::tryFrom(strtolower((string) $input->getOption('min-confidence')));
+        if ($minConfidence === null) {
+            $io->error('L\'option --min-confidence attend high, medium ou low.');
+
+            return Command::FAILURE;
+        }
+
+        /* Détection de la version de Sylius depuis composer.lock, à défaut composer.json */
+        $syliusVersion = (new SyliusVersionDetector())->detect($projectPath);
 
         /* Création du rapport de migration */
         $report = new MigrationReport(
@@ -243,15 +270,22 @@ final class AnalyzeCommand extends Command
         /* Préparation du contexte pour le reporter */
         $context = [
             'output_file' => $input->getOption('output'),
-            'pdf' => $input->getOption('pdf'),
+            'tjm' => $dailyRate,
+            MigrationServiceOffer::CONTEXT_KEY => !$input->getOption('no-promo'),
         ];
 
-        $reporter->generate($report, $output, $context);
+        try {
+            $reporter->generate($report, $output, $context);
+        } catch (PdfGenerationException $exception) {
+            $io->error($exception->getMessage());
+
+            return Command::FAILURE;
+        }
 
         /* Application des correctifs automatiques si demandé */
         $wantsFix = $input->getOption('fix') || $input->getOption('dry-run');
         if ($wantsFix && $this->fixEngine !== null) {
-            $this->runFixEngine($report, $projectPath, $input, $io);
+            $this->runFixEngine($report, $projectPath, $minConfidence, $input, $io);
         }
 
         /* Code de sortie : 1 si des problèmes BREAKING existent, 0 sinon */
@@ -277,51 +311,6 @@ final class AnalyzeCommand extends Command
         }
 
         return $realPath;
-    }
-
-    /**
-     * Détecte la version de Sylius installée en lisant composer.lock.
-     *
-     * @return ?string Version détectée ou null si non trouvée
-     */
-    private function detectSyliusVersion(string $projectPath): ?string
-    {
-        $composerLockPath = $projectPath . '/composer.lock';
-
-        if (!file_exists($composerLockPath)) {
-            return null;
-        }
-
-        $lockContent = file_get_contents($composerLockPath);
-        if ($lockContent === false) {
-            return null;
-        }
-
-        $lockData = json_decode($lockContent, true);
-        if (!is_array($lockData)) {
-            return null;
-        }
-
-        /* Recherche du paquet sylius/sylius dans les dépendances */
-        $packages = array_merge(
-            $lockData['packages'] ?? [],
-            $lockData['packages-dev'] ?? [],
-        );
-
-        foreach ($packages as $package) {
-            if (!is_array($package)) {
-                continue;
-            }
-
-            $packageName = $package['name'] ?? '';
-
-            /* Recherche de sylius/sylius ou sylius/core-bundle comme indicateurs de version */
-            if ($packageName === 'sylius/sylius' || $packageName === 'sylius/core-bundle') {
-                return $package['version'] ?? null;
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -381,18 +370,30 @@ final class AnalyzeCommand extends Command
     /**
      * Exécute le moteur de correctifs automatiques sur le rapport.
      * En mode --dry-run, affiche les correctifs sans les appliquer.
-     * En mode --fix, applique les correctifs après confirmation.
+     * En mode --fix, affiche le patch puis applique les correctifs après confirmation.
+     * Seuls les correctifs au moins aussi fiables que $minConfidence sont proposés.
      */
-    private function runFixEngine(MigrationReport $report, string $projectPath, InputInterface $input, SymfonyStyle $io): void
-    {
+    private function runFixEngine(
+        MigrationReport $report,
+        string $projectPath,
+        FixConfidence $minConfidence,
+        InputInterface $input,
+        SymfonyStyle $io,
+    ): void {
         if ($this->fixEngine === null) {
             return;
         }
 
-        $fixes = $this->fixEngine->generateFixes($report, $projectPath);
+        $allFixes = $this->fixEngine->generateFixes($report, $projectPath);
+        $fixes = array_values(array_filter(
+            $allFixes,
+            static fn (MigrationFix $fix): bool => self::confidenceRank($fix->confidence) >= self::confidenceRank($minConfidence),
+        ));
 
         if ($fixes === []) {
-            $io->text('Aucun correctif automatique disponible pour les issues détectées.');
+            $io->text($allFixes === []
+                ? 'Aucun correctif automatique disponible pour les issues détectées.'
+                : sprintf('Aucun correctif de confiance %s ou supérieure (%d écarté(s)).', $minConfidence->value, count($allFixes)));
 
             return;
         }
@@ -422,8 +423,24 @@ final class AnalyzeCommand extends Command
             return;
         }
 
-        /* Mode fix : applique les correctifs */
+        /* Mode fix : en terminal interactif, le patch complet est montré et rien n'est écrit sans
+           accord explicite. En CI (sans terminal ou avec --no-interaction), le comportement reste
+           celui attendu par les scripts. */
         $io->newLine();
+        if ($input->isInteractive()) {
+            $patch = $this->fixEngine->generatePatch($fixes);
+            if ($patch !== '') {
+                $io->text($patch);
+                $io->newLine();
+            }
+
+            if (!$io->confirm(sprintf('Appliquer ces %d correctif(s) aux fichiers du projet ?', count($fixes)), false)) {
+                $io->text('<comment>Aucune modification appliquée.</comment>');
+
+                return;
+            }
+        }
+
         $applied = 0;
 
         foreach ($fixes as $fix) {
@@ -432,5 +449,33 @@ final class AnalyzeCommand extends Command
         }
 
         $io->success(sprintf('%d correctif(s) appliqué(s).', $applied));
+    }
+
+    /**
+     * Ordonne les niveaux de confiance pour comparer un correctif au seuil demandé.
+     */
+    private static function confidenceRank(FixConfidence $confidence): int
+    {
+        return match ($confidence) {
+            FixConfidence::LOW => 0,
+            FixConfidence::MEDIUM => 1,
+            FixConfidence::HIGH => 2,
+        };
+    }
+
+    /**
+     * Valide l'option --tjm : null si absente, false si invalide, sinon le TJM en euros.
+     */
+    private function parseDailyRate(mixed $value): int|false|null
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (!is_string($value) || !ctype_digit($value) || (int) $value <= 0) {
+            return false;
+        }
+
+        return (int) $value;
     }
 }

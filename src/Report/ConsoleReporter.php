@@ -41,6 +41,10 @@ final class ConsoleReporter implements ReporterInterface
         $this->displayWarningIssues($io, $report, $output);
         $this->displaySuggestions($io, $report, $output);
         $this->displayFooter($io);
+
+        if (MigrationServiceOffer::isEnabled($context)) {
+            $this->displayServiceOffer($io, $report);
+        }
     }
 
     public function getFormat(): string
@@ -231,6 +235,20 @@ final class ConsoleReporter implements ReporterInterface
     }
 
     /**
+     * Affiche la ligne d'offre d'accompagnement, en dernier pour ne jamais masquer le rapport.
+     */
+    private function displayServiceOffer(SymfonyStyle $io, MigrationReport $report): void
+    {
+        $line = (new MigrationServiceOffer())->consoleLine($report->getTotalEstimatedHours());
+        if ($line === null) {
+            return;
+        }
+
+        $io->text(sprintf('<comment>%s</comment>', $line));
+        $io->newLine();
+    }
+
+    /**
      * Affiche le pied de page avec les commandes utiles.
      */
     private function displayFooter(SymfonyStyle $io): void
@@ -238,8 +256,8 @@ final class ConsoleReporter implements ReporterInterface
         $io->section('Prochaines étapes');
 
         $io->text([
-            '  Pour générer un rapport PDF :',
-            '    <info>sylius-upgrade-analyzer sylius-upgrade:analyze --pdf</info>',
+            '  Pour partager le rapport (ticket, wiki, pull request) :',
+            '    <info>sylius-upgrade-analyzer sylius-upgrade:analyze --format=markdown --output=rapport.md</info>',
             '',
             '  Pour afficher tous les détails :',
             '    <info>sylius-upgrade-analyzer sylius-upgrade:analyze -vv</info>',

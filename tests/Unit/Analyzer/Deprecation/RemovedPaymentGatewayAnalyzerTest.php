@@ -7,6 +7,8 @@ namespace PierreArthur\SyliusUpgradeAnalyzer\Tests\Unit\Analyzer\Deprecation;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use PierreArthur\SyliusUpgradeAnalyzer\Analyzer\Deprecation\RemovedPaymentGatewayAnalyzer;
+use PierreArthur\SyliusUpgradeAnalyzer\Model\Category;
+use PierreArthur\SyliusUpgradeAnalyzer\Model\MigrationIssue;
 use PierreArthur\SyliusUpgradeAnalyzer\Model\MigrationReport;
 use PierreArthur\SyliusUpgradeAnalyzer\Model\Severity;
 
@@ -163,5 +165,487 @@ final class RemovedPaymentGatewayAnalyzerTest extends TestCase
         $analyzer = new RemovedPaymentGatewayAnalyzer();
 
         self::assertSame('Removed Payment Gateway', $analyzer->getName());
+    }
+
+    /**
+     * Verifie que supports retourne true quand le package PayPal est declare en require-dev.
+     */
+    #[Test]
+    public function testSupportsReturnsTrueWithPaypalInRequireDev(): void
+    {
+        $this->writeComposerJson([
+            'require' => ['sylius/sylius' => '^1.12'],
+            'require-dev' => ['payum/paypal-express-checkout' => '^1.6'],
+        ]);
+
+        self::assertTrue((new RemovedPaymentGatewayAnalyzer())->supports($this->createReport()));
+    }
+
+    /**
+     * Verifie que supports retourne false quand composer.json est invalide.
+     */
+    #[Test]
+    public function testSupportsReturnsFalseWithInvalidComposerJson(): void
+    {
+        $this->writeFile('composer.json', '{"require": {');
+
+        self::assertFalse((new RemovedPaymentGatewayAnalyzer())->supports($this->createReport()));
+    }
+
+    /**
+     * Verifie qu'aucune issue n'est produite quand composer.json est invalide.
+     */
+    #[Test]
+    public function testReturnsNoIssuesWithInvalidComposerJson(): void
+    {
+        $this->writeFile('composer.json', 'not json');
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        self::assertSame([], $report->getIssues());
+    }
+
+    /**
+     * Verifie que chaque package supprime produit une issue indiquant sa contrainte de version.
+     */
+    #[Test]
+    public function testDetectsBothRemovedPackagesWithVersion(): void
+    {
+        $composerPath = $this->writeComposerJson([
+            'require' => [
+                'sylius/sylius' => '~1.12.0',
+                'payum/stripe' => '^1.7',
+            ],
+            'require-dev' => [
+                'payum/paypal-express-checkout' => '^1.6',
+            ],
+        ]);
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        $stripe = $this->issuesWithMessage($report, 'Dependance payum/stripe (^1.7)');
+        $paypal = $this->issuesWithMessage($report, 'Dependance payum/paypal-express-checkout (^1.6)');
+
+        self::assertCount(1, $stripe);
+        self::assertCount(1, $paypal);
+        self::assertStringContainsString('Stripe via Payum', $stripe[0]->getDetail());
+        self::assertStringContainsString('PayPal Express Checkout via Payum', $paypal[0]->getDetail());
+        self::assertSame(realpath($composerPath), realpath((string) $stripe[0]->getFile()));
+        self::assertSame(Category::DEPRECATION, $paypal[0]->getCategory());
+    }
+
+    /**
+     * Verifie que l'issue de synthese estime 480 minutes par passerelle supprimee.
+     */
+    #[Test]
+    public function testSummaryEstimatesEightHoursPerGateway(): void
+    {
+        $this->writeComposerJson([
+            'require' => [
+                'payum/stripe' => '^1.7',
+                'payum/paypal-express-checkout' => '^1.6',
+            ],
+        ]);
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        $summary = $this->issuesWithMessage($report, '2 passerelle(s) de paiement supprimee(s) detectee(s)');
+
+        self::assertCount(1, $summary);
+        self::assertSame(960, $summary[0]->getEstimatedMinutes());
+        self::assertSame(Severity::BREAKING, $summary[0]->getSeverity());
+        self::assertCount(3, $report->getIssues());
+    }
+
+    /**
+     * Verifie qu'aucune issue n'est produite pour un projet sans passerelle supprimee.
+     */
+    #[Test]
+    public function testReturnsNoIssuesWithoutRemovedGateway(): void
+    {
+        $this->writeComposerJson(['require' => ['sylius/sylius' => '^1.12', 'sylius/paypal-plugin' => '^1.5']]);
+        $this->writeFile('config/packages/payum.yaml', <<<'YAML'
+payum:
+    gateways:
+        offline:
+            factory: offline
+YAML);
+        $this->writeFile('src/Payment/OfflineAction.php', "<?php\nnamespace App\\Payment;\nfinal class OfflineAction {}\n");
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        self::assertSame([], $report->getIssues());
+    }
+
+    /**
+     * Verifie la detection de la factory paypal_express_checkout dans la configuration Payum.
+     */
+    #[Test]
+    public function testDetectsPaypalExpressCheckoutFactoryInConfiguration(): void
+    {
+        $configFile = $this->writeFile('config/packages/payum.yaml', <<<'YAML'
+payum:
+    gateways:
+        paypal:
+            factory: paypal_express_checkout
+            username: '%env(PAYPAL_USERNAME)%'
+            password: '%env(PAYPAL_PASSWORD)%'
+            signature: '%env(PAYPAL_SIGNATURE)%'
+            sandbox: true
+YAML);
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        $issues = $this->issuesWithMessage($report, 'Configuration de gateway "paypal_express_checkout"');
+
+        self::assertCount(1, $issues);
+        self::assertStringContainsString('payum.yaml', $issues[0]->getMessage());
+        self::assertSame(realpath($configFile), realpath((string) $issues[0]->getFile()));
+        self::assertStringContainsString('paypal_express_checkout', $issues[0]->getSuggestion());
+        self::assertCount(1, $this->issuesWithMessage($report, '1 passerelle(s) de paiement supprimee(s)'));
+    }
+
+    /**
+     * Verifie que chaque factory Stripe presente dans un meme fichier produit sa propre issue.
+     */
+    #[Test]
+    public function testDetectsEachStripeFactoryInSameFile(): void
+    {
+        $this->writeFile('config/packages/payum.yml', <<<'YAML'
+payum:
+    gateways:
+        stripe_checkout_gateway:
+            factory: stripe_checkout
+            publishable_key: '%env(STRIPE_PUBLISHABLE_KEY)%'
+            secret_key: '%env(STRIPE_SECRET_KEY)%'
+        stripe_js_gateway:
+            factory: stripe_js
+            publishable_key: '%env(STRIPE_PUBLISHABLE_KEY)%'
+            secret_key: '%env(STRIPE_SECRET_KEY)%'
+YAML);
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        self::assertCount(1, $this->issuesWithMessage($report, 'Configuration de gateway "stripe_checkout"'));
+        self::assertCount(1, $this->issuesWithMessage($report, 'Configuration de gateway "stripe_js"'));
+        self::assertSame(
+            960,
+            $this->issuesWithMessage($report, '2 passerelle(s) de paiement supprimee(s)')[0]->getEstimatedMinutes(),
+        );
+    }
+
+    /**
+     * Verifie la detection d'une classe important un composant Payum Stripe, avec la ligne de l'import.
+     */
+    #[Test]
+    public function testDetectsClassImportingPayumStripe(): void
+    {
+        $file = $this->writeFile('src/Payment/Stripe/ConvertPaymentAction.php', <<<'PHP'
+<?php
+
+declare(strict_types=1);
+
+namespace App\Payment\Stripe;
+
+use Payum\Core\Action\ActionInterface;
+use Payum\Stripe\Constants;
+
+final class ConvertPaymentAction implements ActionInterface
+{
+    public function execute($request): void
+    {
+    }
+
+    public function supports($request): bool
+    {
+        return Constants::STATUS_SUCCEEDED !== '';
+    }
+}
+PHP);
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        $issues = $this->issuesWithMessage($report, 'Classe utilisant une passerelle Payum supprimee');
+
+        self::assertCount(1, $issues);
+        self::assertSame(8, $issues[0]->getLine());
+        self::assertSame(realpath($file), realpath((string) $issues[0]->getFile()));
+        self::assertStringContainsString('Payum\\Stripe\\Constants', $issues[0]->getDetail());
+        self::assertStringContainsString('ligne 8', $issues[0]->getDetail());
+    }
+
+    /**
+     * Verifie la detection d'une classe heritant d'une classe PayPal referencee par son nom complet.
+     */
+    #[Test]
+    public function testDetectsClassExtendingPaypalClassWithoutImport(): void
+    {
+        $this->writeFile('src/Payment/PaypalApi.php', <<<'PHP'
+<?php
+
+namespace App\Payment;
+
+class PaypalApi extends \Payum\Paypal\ExpressCheckout\Nvp\Api
+{
+}
+PHP);
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        $issues = $this->issuesWithMessage($report, 'Classe utilisant une passerelle Payum supprimee');
+
+        self::assertCount(1, $issues);
+        self::assertSame(5, $issues[0]->getLine());
+        self::assertStringContainsString('Payum\\Paypal\\ExpressCheckout\\Nvp\\Api', $issues[0]->getDetail());
+    }
+
+    /**
+     * Verifie qu'un fichier avec plusieurs usages Payum ne produit qu'une issue, sur le premier usage.
+     */
+    #[Test]
+    public function testReportsOnlyFirstUsagePerFile(): void
+    {
+        $this->writeFile('src/Payment/PaypalCaptureAction.php', <<<'PHP'
+<?php
+
+namespace App\Payment;
+
+use Payum\Paypal\ExpressCheckout\Nvp\Action\CaptureAction;
+use Payum\Paypal\ExpressCheckout\Nvp\Api;
+
+final class PaypalCaptureAction extends CaptureAction
+{
+}
+PHP);
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        $issues = $this->issuesWithMessage($report, 'Classe utilisant une passerelle Payum supprimee');
+
+        self::assertCount(1, $issues);
+        self::assertSame(5, $issues[0]->getLine());
+        self::assertStringContainsString('CaptureAction', $issues[0]->getDetail());
+        self::assertCount(1, $this->issuesWithMessage($report, '1 passerelle(s) de paiement supprimee(s)'));
+    }
+
+    /**
+     * Verifie qu'un fichier PHP invalide est ignore sans interrompre l'analyse.
+     */
+    #[Test]
+    public function testIgnoresUnparsablePhpFile(): void
+    {
+        $this->writeFile('src/Payment/Broken.php', "<?php\nuse Payum\\Stripe\\Api;\nclass Broken {\n");
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        self::assertSame([], $report->getIssues());
+    }
+
+    /**
+     * Verifie que la synthese cumule dependances, configurations et classes.
+     */
+    #[Test]
+    public function testSummaryAggregatesComposerConfigurationAndClasses(): void
+    {
+        $this->writeComposerJson(['require' => ['payum/stripe' => '^1.7']]);
+        $this->writeFile('config/packages/payum.yaml', "payum:\n    gateways:\n        stripe:\n            factory: stripe_checkout\n");
+        $this->writeFile('src/Payment/StripeAction.php', "<?php\nnamespace App\\Payment;\nuse Payum\\Stripe\\Request\\Api\\CreateCharge;\nfinal class StripeAction {}\n");
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        $summary = $this->issuesWithMessage($report, '3 passerelle(s) de paiement supprimee(s) detectee(s)');
+
+        self::assertCount(1, $summary);
+        self::assertSame(1440, $summary[0]->getEstimatedMinutes());
+        self::assertCount(4, $report->getIssues());
+    }
+
+    /**
+     * Verifie qu'une classe heritant du SDK Stripe moderne (stripe/stripe-php) n'est pas signalee.
+     */
+    #[Test]
+    public function testIgnoresClassExtendingModernStripeSdk(): void
+    {
+        $this->writeFile('src/Payment/AppStripeClient.php', <<<'PHP'
+<?php
+
+namespace App\Payment;
+
+use Stripe\StripeClient;
+
+final class AppStripeClient extends StripeClient
+{
+}
+PHP);
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        self::assertSame([], $report->getIssues());
+    }
+
+    /**
+     * Verifie qu'une classe heritant d'une classe de sylius/paypal-plugin n'est pas signalee.
+     */
+    #[Test]
+    public function testIgnoresClassExtendingSyliusPaypalPluginClass(): void
+    {
+        $this->writeFile('src/Payment/PaypalPaymentCompleteProcessor.php', <<<'PHP'
+<?php
+
+namespace App\Payment;
+
+use Sylius\PayPalPlugin\Processor\PayPalPaymentCompleteProcessor as BasePaypalProcessor;
+
+final class PaypalPaymentCompleteProcessor extends BasePaypalProcessor
+{
+}
+PHP);
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        self::assertSame([], $report->getIssues());
+    }
+
+    /**
+     * Verifie qu'une classe de payum/paypal-rest, passerelle que Sylius n'a jamais embarquee, n'est pas signalee.
+     */
+    #[Test]
+    public function testIgnoresPayumPaypalRestClass(): void
+    {
+        $this->writeFile('src/Payment/PaypalRestCapture.php', <<<'PHP'
+<?php
+
+namespace App\Payment;
+
+use Payum\Paypal\Rest\Action\CaptureAction;
+
+final class PaypalRestCapture extends CaptureAction
+{
+}
+PHP);
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        self::assertSame([], $report->getIssues());
+    }
+
+    /**
+     * Verifie la detection d'une classe heritant d'une classe Payum Stripe importee sous un alias.
+     */
+    #[Test]
+    public function testDetectsClassExtendingAliasedPayumStripeClass(): void
+    {
+        $this->writeFile('src/Payment/StripeCapture.php', <<<'PHP'
+<?php
+
+namespace App\Payment;
+
+use Payum\Stripe\Action\Api\CreateChargeAction as BaseAction;
+
+final class StripeCapture extends BaseAction
+{
+}
+PHP);
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        $issues = $this->issuesWithMessage($report, 'Classe utilisant une passerelle Payum supprimee');
+
+        self::assertCount(1, $issues);
+        self::assertStringContainsString('Payum\\Stripe\\Action\\Api\\CreateChargeAction', $issues[0]->getDetail());
+    }
+
+    /**
+     * Verifie qu'un nom de factory supprimee present seulement en commentaire ou dans un identifiant
+     * de service ne declenche aucune issue.
+     */
+    #[Test]
+    public function testIgnoresRemovedFactoryNameOutsideGatewayFactoryValue(): void
+    {
+        $this->writeFile('config/services.yaml', <<<'YAML'
+# Ancienne passerelle stripe_js remplacee par le plugin officiel.
+services:
+    app.payment.stripe_js_bridge:
+        class: App\Payment\StripeJsBridge
+        arguments:
+            $label: 'paypal_express_checkout migration'
+YAML);
+
+        $report = $this->createReport();
+        (new RemovedPaymentGatewayAnalyzer())->analyze($report);
+
+        self::assertSame([], $report->getIssues());
+    }
+
+    /**
+     * Verifie la detection du vrai nom du package PayPal supprime (payum/paypal-express-checkout-nvp).
+     */
+    #[Test]
+    public function testDetectsPaypalExpressCheckoutNvpPackage(): void
+    {
+        $this->writeComposerJson(['require' => ['payum/paypal-express-checkout-nvp' => '^1.7']]);
+
+        $analyzer = new RemovedPaymentGatewayAnalyzer();
+        $report = $this->createReport();
+
+        self::assertTrue($analyzer->supports($report));
+
+        $analyzer->analyze($report);
+
+        self::assertCount(1, $this->issuesWithMessage($report, 'Dependance payum/paypal-express-checkout-nvp (^1.7)'));
+    }
+
+    /**
+     * Ecrit composer.json a la racine du projet temporaire.
+     *
+     * @param array<string, mixed> $data Contenu du composer.json
+     */
+    private function writeComposerJson(array $data): string
+    {
+        return $this->writeFile('composer.json', (string) json_encode($data));
+    }
+
+    /**
+     * Cree un fichier (et ses repertoires parents) dans le projet temporaire.
+     * Retourne le chemin absolu du fichier cree.
+     */
+    private function writeFile(string $relativePath, string $content): string
+    {
+        $path = $this->tempDir . '/' . $relativePath;
+        $dir = \dirname($path);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        file_put_contents($path, $content);
+
+        return $path;
+    }
+
+    /**
+     * Retourne les issues dont le message contient le fragment donne.
+     *
+     * @return list<MigrationIssue>
+     */
+    private function issuesWithMessage(MigrationReport $report, string $fragment): array
+    {
+        return array_values(array_filter(
+            $report->getIssues(),
+            static fn (MigrationIssue $issue): bool => str_contains($issue->getMessage(), $fragment),
+        ));
     }
 }
